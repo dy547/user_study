@@ -88,7 +88,8 @@ const IMAGES  = ["sample1","sample2"];
 const IMG_EXT = "png";
 const BASE_CROP = 768;
 
-const jsPsych = initJsPsych();
+// This is the line that was removed. The jspsych.js file already creates the jsPsych object.
+
 const params = new URLSearchParams(location.search);
 const PARTICIPANT = params.get('pid') || 'PILOT';
 const RNG_SEED = Number(params.get('seed') || 12345);
