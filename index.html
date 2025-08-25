@@ -1,386 +1,370 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2487.2">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  <meta charset="utf-8" />
+  <title>HiFiC-style 2AFC · ABX (GitHub Pages Demo)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/jspsych@7/dist/jspsych.css">
+  <style>
+    :root{ --bg:#0b0d10; --fg:#e9eef3; --muted:#8a96a3; --acc:#55a6ff; --card:#11151a; --border:#1b2128; }
+    html,body{height:100%} body{margin:0;background:var(--bg);color:var(--fg);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans;}
+    header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg),rgba(11,13,16,.6));backdrop-filter:saturate(1.2) blur(6px);z-index:10;border-bottom:1px solid var(--border)}
+    .bar{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+    .title{font-weight:800} .chip{font-size:12px;color:var(--muted)}
+    main{max-width:1200px;margin:20px auto;padding:0 16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+    .col{display:flex;flex-direction:column;gap:10px}
+    canvas{background:#000;border:1px solid var(--border);border-radius:12px;display:block}
+    .panel{display:flex;gap:8px;flex-wrap:wrap}
+    button{background:#10161d;border:1px solid var(--border);color:var(--fg);padding:8px 12px;border-radius:10px;cursor:pointer}
+    button.primary{background:var(--acc);border-color:#2b78c5;color:#021020;font-weight:700}
+    button:disabled{opacity:.55;cursor:not-allowed} .muted{color:var(--muted)} .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0c1218;border:1px solid var(--border);border-radius:6px;padding:2px 6px}
+    .footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
+    a{color:var(--acc);text-decoration:none}
   </style>
 </head>
 <body>
-<p class="p1">&lt;!doctype html&gt;</p>
-<p class="p1">&lt;html lang="en"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="utf-8" /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;HiFiC-style 2AFC · ABX (GitHub Pages Demo)&lt;/title&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1" /&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;link rel="stylesheet" href="https://unpkg.com/jspsych@7/dist/jspsych.css"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>:root{ --bg:#0b0d10; --fg:#e9eef3; --muted:#8a96a3; --acc:#55a6ff; --card:#11151a; --border:#1b2128; }</p>
-<p class="p1"><span class="Apple-converted-space">    </span>html,body{height:100%} body{margin:0;background:var(--bg);color:var(--fg);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans;}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg),rgba(11,13,16,.6));backdrop-filter:saturate(1.2) blur(6px);z-index:10;border-bottom:1px solid var(--border)}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.bar{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.title{font-weight:800} .chip{font-size:12px;color:var(--muted)}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>main{max-width:1200px;margin:20px auto;padding:0 16px}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.row{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.col{display:flex;flex-direction:column;gap:10px}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>canvas{background:#000;border:1px solid var(--border);border-radius:12px;display:block}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.panel{display:flex;gap:8px;flex-wrap:wrap}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>button{background:#10161d;border:1px solid var(--border);color:var(--fg);padding:8px 12px;border-radius:10px;cursor:pointer}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>button.primary{background:var(--acc);border-color:#2b78c5;color:#021020;font-weight:700}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>button:disabled{opacity:.55;cursor:not-allowed} .muted{color:var(--muted)} .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0c1218;border:1px solid var(--border);border-radius:6px;padding:2px 6px}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>.footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>a{color:var(--acc);text-decoration:none}</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p1">&lt;header&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="bar"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="title"&gt;HiFiC‑style ABX · 2AFC&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="chip"&gt;Right=Cropped Original (GT); Left=Toggle A/B; Pick the one closer to GT&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p1">&lt;/header&gt;</p>
-<p class="p1">&lt;main&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="card" id="setup"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;h2&gt;Experiment Setup&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;p class="muted"&gt;Place your images in the &lt;code&gt;assets/gt&lt;/code&gt; and method directories, with matching filenames.&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;ul class="muted"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;li&gt;Keyboard: &lt;span class="kbd"&gt;Space&lt;/span&gt; to toggle A/B, &lt;span class="kbd"&gt;F&lt;/span&gt; to select A, &lt;span class="kbd"&gt;J&lt;/span&gt; to select B.&lt;/li&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;li&gt;&lt;span class="kbd"&gt;R&lt;/span&gt; for a new random crop (before locking), &lt;span class="kbd"&gt;Enter&lt;/span&gt; to confirm and lock the crop.&lt;/li&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;li&gt;URL Parameters: &lt;span class="kbd"&gt;?pid=001&amp;seed=42&lt;/span&gt; to set participant ID and random seed.&lt;/li&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/ul&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="panel"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button id="btn-start" class="primary"&gt;Start Experiment&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button id="btn-download" disabled&gt;Download CSV&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;button id="btn-json" disabled&gt;Download JSON&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;p id="status" class="muted"&gt;Not started&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="card" id="trial" style="display:none"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="footer"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div&gt;&lt;span id="progress"&gt;Image 0/0 · Comparisons: 0&lt;/span&gt; &lt;span id="cropinfo" class="muted"&gt;&lt;/span&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div id="imgmeta" class="muted"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="row"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="col"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="muted"&gt;Left: Method &lt;span id="left-label"&gt;A&lt;/span&gt; (Toggleable)&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;canvas id="canvas-left" width="512" height="512"&gt;&lt;/canvas&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="panel"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button id="btn-toggle"&gt;Toggle A/B (Space)&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button id="btn-pick-a" class="primary"&gt;Select A (F)&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button id="btn-pick-b" class="primary"&gt;Select B (J)&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button id="btn-next-image" class="primary" style="display:none;"&gt;Next Image&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="col"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="muted"&gt;Right: Ground Truth (Same Crop)&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;canvas id="canvas-gt" width="512" height="512"&gt;&lt;/canvas&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="panel"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button id="btn-rand-crop"&gt;New Random Crop (R)&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;button id="btn-lock-crop" class="primary"&gt;Confirm Crop (Enter)&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="card" id="done" style="display:none"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;h2&gt;Complete ✅&lt;/h2&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;p&gt;Click the buttons above to download the results as &lt;b&gt;CSV&lt;/b&gt; or &lt;b&gt;JSON&lt;/b&gt;.&lt;/p&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;pre id="summary" class="muted"&gt;&lt;/pre&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p1">&lt;/main&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;script src="jspsych.js"&gt;&lt;/script&gt;</p>
-<p class="p1">&lt;script&gt;</p>
-<p class="p1">// CONFIGURATION</p>
-<p class="p1">const METHODS = ["BPG_0db", "ADJSCC_0db", "WFDJSCC_0db"];</p>
-<p class="p1">const IMAGES<span class="Apple-converted-space">  </span>= ["kodim01", "kodim02", "kodim03", "kodim04", "kodim05", "kodim06", "kodim07", "kodim08", "kodim09", "kodim10", "kodim11", "kodim12", "kodim13", "kodim14", "kodim15", "kodim16", "kodim17", "kodim18", "kodim19", "kodim20", "kodim21", "kodim22", "kodim23", "kodim24"];</p>
-<p class="p1">const IMG_EXT = "png";</p>
-<p class="p1">const BASE_CROP = 512; // MODIFIED: Patch size changed to 512</p>
-<p class="p2"><br></p>
-<p class="p1">// SETUP</p>
-<p class="p1">const params = new URLSearchParams(location.search);</p>
-<p class="p1">const PARTICIPANT = params.get('pid') || 'PILOT';</p>
-<p class="p1">const RNG_SEED = Number(params.get('seed') || 12345);</p>
-<p class="p1">let rng_state = RNG_SEED &gt;&gt;&gt; 0;</p>
-<p class="p1">function rnd(){ rng_state = (rng_state * 1664525 + 1013904223) &gt;&gt;&gt; 0; return rng_state / 4294967296; }</p>
-<p class="p1">function irand(min, max){ return Math.floor(rnd()*(max-min+1))+min; }</p>
-<p class="p2"><br></p>
-<p class="p1">let cropSizeCSS = BASE_CROP;</p>
-<p class="p1">let dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));</p>
-<p class="p2"><br></p>
-<p class="p1">const leftCanvas = document.getElementById('canvas-left');</p>
-<p class="p1">const gtCanvas <span class="Apple-converted-space">  </span>= document.getElementById('canvas-gt');</p>
-<p class="p1">const lctx = leftCanvas.getContext('2d');</p>
-<p class="p1">const gctx = gtCanvas.getContext('2d');</p>
-<p class="p1">lctx.imageSmoothingEnabled = false;</p>
-<p class="p1">gctx.imageSmoothingEnabled = false;</p>
-<p class="p2"><br></p>
-<p class="p1">let fixedCrops = {};</p>
-<p class="p1">let current = {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>imageIndex: 0, imageId: null, crop: null, showing: 'A', pair: null,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>order: [], pending: [], low: 0, high: 0, mid: 0, candidate: null, next: null,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>comparisonsDone: 0, shownFirst: 'A',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>trialStartTime: 0, toggleCount: 0 // NEW: Variables for advanced data collection</p>
-<p class="p1">};</p>
-<p class="p2"><br></p>
-<p class="p1">const cache = new Map();</p>
-<p class="p1">function asset(method, imageId){ return method==='gt' ? `assets/gt/${imageId}.${IMG_EXT}` : `assets/${method}/${imageId}.${IMG_EXT}`; }</p>
-<p class="p1">function loadImage(path){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(cache.has(path)) return Promise.resolve(cache.get(path));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>return new Promise((res,rej)=&gt;{</p>
-<p class="p1"><span class="Apple-converted-space">    </span>const img = new Image();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>img.onload = () =&gt; { cache.set(path, img); res(img) };</p>
-<p class="p1"><span class="Apple-converted-space">    </span>img.onerror = (err) =&gt; { console.error(`Failed to load image: ${path}`); rej(err); };</p>
-<p class="p1"><span class="Apple-converted-space">    </span>img.src = path;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>});</p>
-<p class="p1">}</p>
-<p class="p1">async function preloadForImage(imageId){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const paths = [asset('gt',imageId), ...METHODS.map(m=&gt;asset(m,imageId))];</p>
-<p class="p1"><span class="Apple-converted-space">  </span>for(const p of paths){ await loadImage(p); }</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">function fitCropSize(){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const pad = 48; const maxW = Math.max(320, window.innerWidth - pad);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const per = Math.floor(maxW/2) - 16;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>cropSizeCSS = Math.max(256, Math.min(BASE_CROP, per));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>[leftCanvas, gtCanvas].forEach(cv=&gt;{</p>
-<p class="p1"><span class="Apple-converted-space">    </span>cv.style.width = cv.style.height = cropSizeCSS + 'px';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>cv.width<span class="Apple-converted-space">  </span>= Math.floor(cropSizeCSS * dpr);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>cv.height = Math.floor(cropSizeCSS * dpr);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>});</p>
-<p class="p1">}</p>
-<p class="p1">window.addEventListener('resize', fitCropSize); fitCropSize();</p>
-<p class="p2"><br></p>
-<p class="p1">function randomCropCoord(img){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const size = cropSizeCSS;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const W = img.naturalWidth, H = img.naturalHeight;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const xMax = Math.max(0, W - size), yMax = Math.max(0, H - size);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>return { x: xMax&gt;0 ? irand(0,xMax) : 0, y: yMax&gt;0 ? irand(0,yMax) : 0, size };</p>
-<p class="p1">}</p>
-<p class="p1">function drawCrop(ctx, img, crop){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const s = crop.size, dw = Math.floor(cropSizeCSS * dpr), dh = Math.floor(cropSizeCSS * dpr);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>ctx.clearRect(0,0,dw,dh);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>ctx.imageSmoothingEnabled = false;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>ctx.drawImage(img, crop.x, crop.y, s, s, 0, 0, dw, dh);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">const elProgress = document.getElementById('progress');</p>
-<p class="p1">const elCropInfo = document.getElementById('cropinfo');</p>
-<p class="p1">const elImgMeta<span class="Apple-converted-space">  </span>= document.getElementById('imgmeta');</p>
-<p class="p1">const elLeftLabel= document.getElementById('left-label');</p>
-<p class="p1">function updateHUD(){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>elProgress.textContent = `Image ${current.imageIndex+1}/${IMAGES.length} · Comparisons: ${current.comparisonsDone}`;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>elCropInfo.textContent = current.crop ? `<span class="Apple-converted-space">  </span>crop=(${current.crop.x},${current.crop.y},${current.crop.size})` : '';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>elImgMeta.textContent = current.pair ? `A=${current.pair.A} · B=${current.pair.B} · Showing: ${current.showing}` : '';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>elLeftLabel.textContent = current.showing;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">function randomizedPair(x,y){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const swap = rnd()&lt;0.5;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const startWith = rnd()&lt;0.5 ? 'A':'B';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>return swap ? {A:y, B:x, startWith} : {A:x, B:y, startWith};</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">function startImage(index){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btnRandCrop.disabled = false;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.imageIndex = index;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.imageId = IMAGES[index];</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.order = [METHODS[0]];</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.pending = METHODS.slice(1);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const gtImg = cache.get(asset('gt', current.imageId));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.crop = fixedCrops[current.imageId] || randomCropCoord(gtImg);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btnNextImage.style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btnPickA.style.display = 'inline-block';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btnPickB.style.display = 'inline-block';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>startInsertion();</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">function startInsertion(){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(current.pending.length===0){ nextImage(); return; }</p>
-<p class="p2"><span class="Apple-converted-space">  </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>// NEW: Reset counters for the new pair</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.trialStartTime = performance.now();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.toggleCount = 0;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.next = current.pending.shift();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.low = 0;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.high = current.order.length;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.mid = Math.floor((current.low+current.high)/2);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.candidate = current.order[current.mid];</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.pair = randomizedPair(current.next, current.candidate);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.showing = current.pair.startWith;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.shownFirst = current.pair.startWith;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>redraw();</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">function handleDecision(pick){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btnPickA.disabled = true;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btnPickB.disabled = true;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const decisionTime = performance.now() - current.trialStartTime;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>// MODIFIED: This object now matches your desired CSV format</p>
-<p class="p1"><span class="Apple-converted-space">  </span>jsPsych.data.push({</p>
-<p class="p1"><span class="Apple-converted-space">    </span>participant: PARTICIPANT,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>image_id: current.imageId,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>event: 'decision',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>pair_id: `${current.imageId}-${current.pair.A}-${current.pair.B}`,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>pair_index: current.comparisonsDone,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>crop_x: current.crop.x,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>crop_y: current.crop.y,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>crop_size: current.crop.size,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>label_A_source: current.pair.A,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>label_B_source: current.pair.B,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>shown_first: current.shownFirst,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>shown_at_click: current.showing,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>choice: pick,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>decision_time_ms: decisionTime,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>toggle_count: current.toggleCount,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>viewport_w: window.innerWidth,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>viewport_h: window.innerHeight,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>dpr: dpr,</p>
-<p class="p1"><span class="Apple-converted-space">    </span>ts: Date.now()</p>
-<p class="p1"><span class="Apple-converted-space">  </span>});</p>
-<p class="p2"><span class="Apple-converted-space">  </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(pick==='A'){ current.high = current.mid; } else { current.low = current.mid + 1; }</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.comparisonsDone++;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(current.low &gt;= current.high){</p>
-<p class="p1"><span class="Apple-converted-space">    </span>current.order.splice(current.low, 0, current.next);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>startInsertion();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>return;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p2"><span class="Apple-converted-space">  </span></p>
-<p class="p1"><span class="Apple-converted-space">  </span>// NEW: Reset counters for the next comparison on the same image</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.trialStartTime = performance.now();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.toggleCount = 0;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.mid = Math.floor((current.low+current.high)/2);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.candidate = current.order[current.mid];</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.pair = randomizedPair(current.next, current.candidate);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.showing = current.pair.startWith;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.shownFirst = current.pair.startWith;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>redraw();</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">function nextImage(){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(!fixedCrops[current.imageId]) fixedCrops[current.imageId] = {...current.crop};</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(current.imageIndex + 1 &lt; IMAGES.length){</p>
-<p class="p1"><span class="Apple-converted-space">    </span>btnPickA.style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>btnPickB.style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>btnNextImage.style.display = 'inline-block';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}else{</p>
-<p class="p1"><span class="Apple-converted-space">    </span>finish();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">function redraw(){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btnPickA.disabled = false;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btnPickB.disabled = false;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>updateHUD();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const {imageId, crop, showing, pair} = current;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const leftKey = (showing==='A') ? pair.A : pair.B;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const leftImg = cache.get(asset(leftKey, imageId));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const gtImg <span class="Apple-converted-space">  </span>= cache.get(asset('gt', imageId));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>drawCrop(lctx, leftImg, crop);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>drawCrop(gctx, gtImg, crop);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">const btnStart = document.getElementById('btn-start');</p>
-<p class="p1">const btnDownload = document.getElementById('btn-download');</p>
-<p class="p1">const btnJSON = document.getElementById('btn-json');</p>
-<p class="p1">const btnToggle = document.getElementById('btn-toggle');</p>
-<p class="p1">const btnPickA = document.getElementById('btn-pick-a');</p>
-<p class="p1">const btnPickB = document.getElementById('btn-pick-b');</p>
-<p class="p1">const btnRandCrop = document.getElementById('btn-rand-crop');</p>
-<p class="p1">const btnLockCrop = document.getElementById('btn-lock-crop');</p>
-<p class="p1">const elSetup = document.getElementById('setup');</p>
-<p class="p1">const elTrial = document.getElementById('trial');</p>
-<p class="p1">const elDone<span class="Apple-converted-space">  </span>= document.getElementById('done');</p>
-<p class="p1">const elStatus= document.getElementById('status');</p>
-<p class="p1">const btnNextImage = document.getElementById('btn-next-image');</p>
-<p class="p2"><br></p>
-<p class="p1">btnStart.addEventListener('click', async ()=&gt;{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>elStatus.textContent = 'Preloading...';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>try {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>await preloadForImage(IMAGES[0]);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>elSetup.style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>elTrial.style.display = 'block';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>startImage(0);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>} catch (error) {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>elStatus.textContent = 'Error: Could not load images. Please check the assets folder and the browser console.';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>console.error("Preloading failed:", error);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">btnToggle.addEventListener('click', ()=&gt;{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.toggleCount++; // NEW: Increment toggle counter</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.showing = (current.showing==='A') ? 'B' : 'A';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>redraw();</p>
-<p class="p1">});</p>
-<p class="p1">btnPickA.addEventListener('click', ()=&gt;{ handleDecision('A'); });</p>
-<p class="p1">btnPickB.addEventListener('click', ()=&gt;{ handleDecision('B'); });</p>
-<p class="p1">btnRandCrop.addEventListener('click', ()=&gt;{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(fixedCrops[current.imageId]) return;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const gtImg = cache.get(asset('gt', current.imageId));</p>
-<p class="p1"><span class="Apple-converted-space">  </span>current.crop = randomCropCoord(gtImg);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>redraw();</p>
-<p class="p1">});</p>
-<p class="p1">btnLockCrop.addEventListener('click', ()=&gt;{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>fixedCrops[current.imageId] = {...current.crop};</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btnRandCrop.disabled = true;</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">btnNextImage.addEventListener('click', async () =&gt; {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const nextImageIndex = current.imageIndex + 1;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>elStatus.textContent = 'Preloading...';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>try {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>await preloadForImage(IMAGES[nextImageIndex]);</p>
-<p class="p1"><span class="Apple-converted-space">    </span>elStatus.textContent = '';<span class="Apple-converted-space"> </span></p>
-<p class="p1"><span class="Apple-converted-space">    </span>startImage(nextImageIndex);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>} catch (error) {</p>
-<p class="p1"><span class="Apple-converted-space">     </span>elStatus.textContent = `Error: Could not load ${IMAGES[nextImageIndex]}. Please check the assets folder.`;</p>
-<p class="p1"><span class="Apple-converted-space">     </span>console.error("Preloading failed:", error);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">window.addEventListener('keydown', (e)=&gt;{</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(elTrial.style.display==='none') return;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(e.key===' '){ e.preventDefault(); btnToggle.click(); }</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(!btnPickA.disabled &amp;&amp; btnPickA.style.display !== 'none' &amp;&amp; (e.key==='f' || e.key==='F')){ btnPickA.click(); }</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(!btnPickB.disabled &amp;&amp; btnPickB.style.display !== 'none' &amp;&amp; (e.key==='j' || e.key==='J')){ btnPickB.click(); }</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(!btnRandCrop.disabled &amp;&amp; (e.key==='r' || e.key==='R')){ btnRandCrop.click(); }</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if(e.key==='Enter'){ btnLockCrop.click(); }</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">function finish(){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>elTrial.style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>elDone.style.display = 'block';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btnDownload.disabled = false;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>btnJSON.disabled = false;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const n = jsPsych.data.get().count();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>document.getElementById('summary').textContent = `Entries: ${n}\nParticipant: ${PARTICIPANT}\nSeed: ${RNG_SEED}`;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">function download(filename, text, mime){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const blob = new Blob([text], {type: mime});</p>
-<p class="p1"><span class="Apple-converted-space">  </span>const a = document.createElement('a');</p>
-<p class="p1"><span class="Apple-converted-space">  </span>a.href = URL.createObjectURL(blob);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>a.download = filename;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>a.click();</p>
-<p class="p1">}</p>
-<p class="p1">btnDownload.addEventListener('click', ()=&gt;{ const csv = jsPsych.data.get().csv(); download(`results_${PARTICIPANT}.csv`, csv, 'text/csv;charset=utf-8;'); });</p>
-<p class="p1">btnJSON.addEventListener('click', ()=&gt;{ const json = jsPsych.data.get().json(true); download(`results_${PARTICIPANT}.json`, json, 'application/json'); });</p>
-<p class="p2"><br></p>
-<p class="p1">document.getElementById('status').textContent = `Ready. ${METHODS.length} methods · ${IMAGES.length} images`;</p>
-<p class="p1">&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+<header>
+  <div class="bar">
+    <div class="title">HiFiC‑style ABX · 2AFC</div>
+    <div class="chip">Right=Cropped Original (GT); Left=Toggle A/B; Pick the one closer to GT</div>
+  </div>
+</header>
+<main>
+  <div class="card" id="setup">
+    <h2>Experiment Setup</h2>
+    <p class="muted">Place your images in the <code>assets/gt</code> and method directories, with matching filenames.</p>
+    <ul class="muted">
+      <li>Keyboard: <span class="kbd">Space</span> to toggle A/B, <span class="kbd">F</span> to select A, <span class="kbd">J</span> to select B.</li>
+      <li><span class="kbd">R</span> for a new random crop (before locking), <span class="kbd">Enter</span> to confirm and lock the crop.</li>
+      <li>URL Parameters: <span class="kbd">?pid=001&seed=42</span> to set participant ID and random seed.</li>
+    </ul>
+    <div class="panel">
+      <button id="btn-start" class="primary">Start Experiment</button>
+      <button id="btn-download" disabled>Download CSV</button>
+      <button id="btn-json" disabled>Download JSON</button>
+    </div>
+    <p id="status" class="muted">Not started</p>
+  </div>
+
+  <div class="card" id="trial" style="display:none">
+    <div class="footer">
+      <div><span id="progress">Image 0/0 · Comparisons: 0</span> <span id="cropinfo" class="muted"></span></div>
+      <div id="imgmeta" class="muted"></div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="muted">Left: Method <span id="left-label">A</span> (Toggleable)</div>
+        <canvas id="canvas-left" width="512" height="512"></canvas>
+        <div class="panel">
+          <button id="btn-toggle">Toggle A/B (Space)</button>
+          <button id="btn-pick-a" class="primary">Select A (F)</button>
+          <button id="btn-pick-b" class="primary">Select B (J)</button>
+          <button id="btn-next-image" class="primary" style="display:none;">Next Image</button>
+        </div>
+      </div>
+      <div class="col">
+        <div class="muted">Right: Ground Truth (Same Crop)</div>
+        <canvas id="canvas-gt" width="512" height="512"></canvas>
+        <div class="panel">
+          <button id="btn-rand-crop">New Random Crop (R)</button>
+          <button id="btn-lock-crop" class="primary">Confirm Crop (Enter)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="done" style="display:none">
+    <h2>Complete ✅</h2>
+    <p>Click the buttons above to download the results as <b>CSV</b> or <b>JSON</b>.</p>
+    <pre id="summary" class="muted"></pre>
+  </div>
+</main>
+
+<script src="jspsych.js"></script>
+<script>
+// CONFIGURATION
+const METHODS = ["BPG_0db", "ADJSCC_0db", "WFDJSCC_0db"];
+const IMAGES  = ["kodim01", "kodim02", "kodim03", "kodim04", "kodim05", "kodim06", "kodim07", "kodim08", "kodim09", "kodim10", "kodim11", "kodim12", "kodim13", "kodim14", "kodim15", "kodim16", "kodim17", "kodim18", "kodim19", "kodim20", "kodim21", "kodim22", "kodim23", "kodim24"];
+const IMG_EXT = "png";
+const BASE_CROP = 512; // MODIFIED: Patch size changed to 512
+
+// SETUP
+const params = new URLSearchParams(location.search);
+const PARTICIPANT = params.get('pid') || 'PILOT';
+const RNG_SEED = Number(params.get('seed') || 12345);
+let rng_state = RNG_SEED >>> 0;
+function rnd(){ rng_state = (rng_state * 1664525 + 1013904223) >>> 0; return rng_state / 4294967296; }
+function irand(min, max){ return Math.floor(rnd()*(max-min+1))+min; }
+
+let cropSizeCSS = BASE_CROP;
+let dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+
+const leftCanvas = document.getElementById('canvas-left');
+const gtCanvas   = document.getElementById('canvas-gt');
+const lctx = leftCanvas.getContext('2d');
+const gctx = gtCanvas.getContext('2d');
+lctx.imageSmoothingEnabled = false;
+gctx.imageSmoothingEnabled = false;
+
+let fixedCrops = {};
+let current = {
+    imageIndex: 0, imageId: null, crop: null, showing: 'A', pair: null,
+    order: [], pending: [], low: 0, high: 0, mid: 0, candidate: null, next: null,
+    comparisonsDone: 0, shownFirst: 'A',
+    trialStartTime: 0, toggleCount: 0 // NEW: Variables for advanced data collection
+};
+
+const cache = new Map();
+function asset(method, imageId){ return method==='gt' ? `assets/gt/${imageId}.${IMG_EXT}` : `assets/${method}/${imageId}.${IMG_EXT}`; }
+function loadImage(path){
+  if(cache.has(path)) return Promise.resolve(cache.get(path));
+  return new Promise((res,rej)=>{
+    const img = new Image();
+    img.onload = () => { cache.set(path, img); res(img) };
+    img.onerror = (err) => { console.error(`Failed to load image: ${path}`); rej(err); };
+    img.src = path;
+  });
+}
+async function preloadForImage(imageId){
+  const paths = [asset('gt',imageId), ...METHODS.map(m=>asset(m,imageId))];
+  for(const p of paths){ await loadImage(p); }
+}
+
+function fitCropSize(){
+  const pad = 48; const maxW = Math.max(320, window.innerWidth - pad);
+  const per = Math.floor(maxW/2) - 16;
+  cropSizeCSS = Math.max(256, Math.min(BASE_CROP, per));
+  [leftCanvas, gtCanvas].forEach(cv=>{
+    cv.style.width = cv.style.height = cropSizeCSS + 'px';
+    cv.width  = Math.floor(cropSizeCSS * dpr);
+    cv.height = Math.floor(cropSizeCSS * dpr);
+  });
+}
+window.addEventListener('resize', fitCropSize); fitCropSize();
+
+function randomCropCoord(img){
+  const size = cropSizeCSS;
+  const W = img.naturalWidth, H = img.naturalHeight;
+  const xMax = Math.max(0, W - size), yMax = Math.max(0, H - size);
+  return { x: xMax>0 ? irand(0,xMax) : 0, y: yMax>0 ? irand(0,yMax) : 0, size };
+}
+function drawCrop(ctx, img, crop){
+  const s = crop.size, dw = Math.floor(cropSizeCSS * dpr), dh = Math.floor(cropSizeCSS * dpr);
+  ctx.clearRect(0,0,dw,dh);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(img, crop.x, crop.y, s, s, 0, 0, dw, dh);
+}
+
+const elProgress = document.getElementById('progress');
+const elCropInfo = document.getElementById('cropinfo');
+const elImgMeta  = document.getElementById('imgmeta');
+const elLeftLabel= document.getElementById('left-label');
+function updateHUD(){
+  elProgress.textContent = `Image ${current.imageIndex+1}/${IMAGES.length} · Comparisons: ${current.comparisonsDone}`;
+  elCropInfo.textContent = current.crop ? `  crop=(${current.crop.x},${current.crop.y},${current.crop.size})` : '';
+  elImgMeta.textContent = current.pair ? `A=${current.pair.A} · B=${current.pair.B} · Showing: ${current.showing}` : '';
+  elLeftLabel.textContent = current.showing;
+}
+
+function randomizedPair(x,y){
+  const swap = rnd()<0.5;
+  const startWith = rnd()<0.5 ? 'A':'B';
+  return swap ? {A:y, B:x, startWith} : {A:x, B:y, startWith};
+}
+
+function startImage(index){
+  btnRandCrop.disabled = false;
+  current.imageIndex = index;
+  current.imageId = IMAGES[index];
+  current.order = [METHODS[0]];
+  current.pending = METHODS.slice(1);
+  const gtImg = cache.get(asset('gt', current.imageId));
+  current.crop = fixedCrops[current.imageId] || randomCropCoord(gtImg);
+  btnNextImage.style.display = 'none';
+  btnPickA.style.display = 'inline-block';
+  btnPickB.style.display = 'inline-block';
+  startInsertion();
+}
+
+function startInsertion(){
+  if(current.pending.length===0){ nextImage(); return; }
+  
+  // NEW: Reset counters for the new pair
+  current.trialStartTime = performance.now();
+  current.toggleCount = 0;
+
+  current.next = current.pending.shift();
+  current.low = 0;
+  current.high = current.order.length;
+  current.mid = Math.floor((current.low+current.high)/2);
+  current.candidate = current.order[current.mid];
+  current.pair = randomizedPair(current.next, current.candidate);
+  current.showing = current.pair.startWith;
+  current.shownFirst = current.pair.startWith;
+  redraw();
+}
+
+function handleDecision(pick){
+  btnPickA.disabled = true;
+  btnPickB.disabled = true;
+  const decisionTime = performance.now() - current.trialStartTime;
+
+  // MODIFIED: This object now matches your desired CSV format
+  jsPsych.data.push({
+    participant: PARTICIPANT,
+    image_id: current.imageId,
+    event: 'decision',
+    pair_id: `${current.imageId}-${current.pair.A}-${current.pair.B}`,
+    pair_index: current.comparisonsDone,
+    crop_x: current.crop.x,
+    crop_y: current.crop.y,
+    crop_size: current.crop.size,
+    label_A_source: current.pair.A,
+    label_B_source: current.pair.B,
+    shown_first: current.shownFirst,
+    shown_at_click: current.showing,
+    choice: pick,
+    decision_time_ms: decisionTime,
+    toggle_count: current.toggleCount,
+    viewport_w: window.innerWidth,
+    viewport_h: window.innerHeight,
+    dpr: dpr,
+    ts: Date.now()
+  });
+  
+  if(pick==='A'){ current.high = current.mid; } else { current.low = current.mid + 1; }
+  current.comparisonsDone++;
+  if(current.low >= current.high){
+    current.order.splice(current.low, 0, current.next);
+    startInsertion();
+    return;
+  }
+  
+  // NEW: Reset counters for the next comparison on the same image
+  current.trialStartTime = performance.now();
+  current.toggleCount = 0;
+
+  current.mid = Math.floor((current.low+current.high)/2);
+  current.candidate = current.order[current.mid];
+  current.pair = randomizedPair(current.next, current.candidate);
+  current.showing = current.pair.startWith;
+  current.shownFirst = current.pair.startWith;
+  redraw();
+}
+
+function nextImage(){
+  if(!fixedCrops[current.imageId]) fixedCrops[current.imageId] = {...current.crop};
+
+  if(current.imageIndex + 1 < IMAGES.length){
+    btnPickA.style.display = 'none';
+    btnPickB.style.display = 'none';
+    btnNextImage.style.display = 'inline-block';
+  }else{
+    finish();
+  }
+}
+
+function redraw(){
+  btnPickA.disabled = false;
+  btnPickB.disabled = false;
+  updateHUD();
+  const {imageId, crop, showing, pair} = current;
+  const leftKey = (showing==='A') ? pair.A : pair.B;
+  const leftImg = cache.get(asset(leftKey, imageId));
+  const gtImg   = cache.get(asset('gt', imageId));
+  drawCrop(lctx, leftImg, crop);
+  drawCrop(gctx, gtImg, crop);
+}
+
+const btnStart = document.getElementById('btn-start');
+const btnDownload = document.getElementById('btn-download');
+const btnJSON = document.getElementById('btn-json');
+const btnToggle = document.getElementById('btn-toggle');
+const btnPickA = document.getElementById('btn-pick-a');
+const btnPickB = document.getElementById('btn-pick-b');
+const btnRandCrop = document.getElementById('btn-rand-crop');
+const btnLockCrop = document.getElementById('btn-lock-crop');
+const elSetup = document.getElementById('setup');
+const elTrial = document.getElementById('trial');
+const elDone  = document.getElementById('done');
+const elStatus= document.getElementById('status');
+const btnNextImage = document.getElementById('btn-next-image');
+
+btnStart.addEventListener('click', async ()=>{
+  elStatus.textContent = 'Preloading...';
+  try {
+    await preloadForImage(IMAGES[0]);
+    elSetup.style.display = 'none';
+    elTrial.style.display = 'block';
+    startImage(0);
+  } catch (error) {
+    elStatus.textContent = 'Error: Could not load images. Please check the assets folder and the browser console.';
+    console.error("Preloading failed:", error);
+  }
+});
+
+btnToggle.addEventListener('click', ()=>{
+  current.toggleCount++; // NEW: Increment toggle counter
+  current.showing = (current.showing==='A') ? 'B' : 'A';
+  redraw();
+});
+btnPickA.addEventListener('click', ()=>{ handleDecision('A'); });
+btnPickB.addEventListener('click', ()=>{ handleDecision('B'); });
+btnRandCrop.addEventListener('click', ()=>{
+  if(fixedCrops[current.imageId]) return;
+  const gtImg = cache.get(asset('gt', current.imageId));
+  current.crop = randomCropCoord(gtImg);
+  redraw();
+});
+btnLockCrop.addEventListener('click', ()=>{
+  fixedCrops[current.imageId] = {...current.crop};
+  btnRandCrop.disabled = true;
+});
+
+btnNextImage.addEventListener('click', async () => {
+  const nextImageIndex = current.imageIndex + 1;
+  elStatus.textContent = 'Preloading...';
+  try {
+    await preloadForImage(IMAGES[nextImageIndex]);
+    elStatus.textContent = ''; 
+    startImage(nextImageIndex);
+  } catch (error) {
+     elStatus.textContent = `Error: Could not load ${IMAGES[nextImageIndex]}. Please check the assets folder.`;
+     console.error("Preloading failed:", error);
+  }
+});
+
+window.addEventListener('keydown', (e)=>{
+  if(elTrial.style.display==='none') return;
+  if(e.key===' '){ e.preventDefault(); btnToggle.click(); }
+  if(!btnPickA.disabled && btnPickA.style.display !== 'none' && (e.key==='f' || e.key==='F')){ btnPickA.click(); }
+  if(!btnPickB.disabled && btnPickB.style.display !== 'none' && (e.key==='j' || e.key==='J')){ btnPickB.click(); }
+  if(!btnRandCrop.disabled && (e.key==='r' || e.key==='R')){ btnRandCrop.click(); }
+  if(e.key==='Enter'){ btnLockCrop.click(); }
+});
+
+function finish(){
+  elTrial.style.display = 'none';
+  elDone.style.display = 'block';
+  btnDownload.disabled = false;
+  btnJSON.disabled = false;
+  const n = jsPsych.data.get().count();
+  document.getElementById('summary').textContent = `Entries: ${n}\nParticipant: ${PARTICIPANT}\nSeed: ${RNG_SEED}`;
+}
+
+function download(filename, text, mime){
+  const blob = new Blob([text], {type: mime});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+}
+btnDownload.addEventListener('click', ()=>{ const csv = jsPsych.data.get().csv(); download(`results_${PARTICIPANT}.csv`, csv, 'text/csv;charset=utf-8;'); });
+btnJSON.addEventListener('click', ()=>{ const json = jsPsych.data.get().json(true); download(`results_${PARTICIPANT}.json`, json, 'application/json'); });
+
+document.getElementById('status').textContent = `Ready. ${METHODS.length} methods · ${IMAGES.length} images`;
+</script>
 </body>
 </html>
