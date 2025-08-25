@@ -85,10 +85,11 @@
 <script src="jspsych.js"></script>
 <script>
 // CONFIGURATION
-const METHODS = ["BPG_0db", "ADJSCC_0db", "WFDJSCC_0db"];
+// CORRECTED the typo in the method name below
+const METHODS = ["BPG_0db", "ADJSCC_0db", "WDJSCC_0db"]; 
 const IMAGES  = ["kodim01", "kodim02", "kodim03", "kodim04", "kodim05", "kodim06", "kodim07", "kodim08", "kodim09", "kodim10", "kodim11", "kodim12", "kodim13", "kodim14", "kodim15", "kodim16", "kodim17", "kodim18", "kodim19", "kodim20", "kodim21", "kodim22", "kodim23", "kodim24"];
 const IMG_EXT = "png";
-const BASE_CROP = 512; // MODIFIED: Patch size changed to 512
+const BASE_CROP = 512;
 
 // SETUP
 const params = new URLSearchParams(location.search);
@@ -113,7 +114,7 @@ let current = {
     imageIndex: 0, imageId: null, crop: null, showing: 'A', pair: null,
     order: [], pending: [], low: 0, high: 0, mid: 0, candidate: null, next: null,
     comparisonsDone: 0, shownFirst: 'A',
-    trialStartTime: 0, toggleCount: 0 // NEW: Variables for advanced data collection
+    trialStartTime: 0, toggleCount: 0 
 };
 
 const cache = new Map();
@@ -191,7 +192,6 @@ function startImage(index){
 function startInsertion(){
   if(current.pending.length===0){ nextImage(); return; }
   
-  // NEW: Reset counters for the new pair
   current.trialStartTime = performance.now();
   current.toggleCount = 0;
 
@@ -211,7 +211,6 @@ function handleDecision(pick){
   btnPickB.disabled = true;
   const decisionTime = performance.now() - current.trialStartTime;
 
-  // MODIFIED: This object now matches your desired CSV format
   jsPsych.data.push({
     participant: PARTICIPANT,
     image_id: current.imageId,
@@ -242,7 +241,6 @@ function handleDecision(pick){
     return;
   }
   
-  // NEW: Reset counters for the next comparison on the same image
   current.trialStartTime = performance.now();
   current.toggleCount = 0;
 
@@ -306,7 +304,7 @@ btnStart.addEventListener('click', async ()=>{
 });
 
 btnToggle.addEventListener('click', ()=>{
-  current.toggleCount++; // NEW: Increment toggle counter
+  current.toggleCount++; 
   current.showing = (current.showing==='A') ? 'B' : 'A';
   redraw();
 });
@@ -351,7 +349,7 @@ function finish(){
   btnDownload.disabled = false;
   btnJSON.disabled = false;
   const n = jsPsych.data.get().count();
-  document.getElementById('summary').textContent = `Entries: ${n}\nParticipant: ${PARTICIPANT}\nSeed: ${RNG_SEED}`;
+  document.getElementById('summary').textContent = `Entries: ${n}\nParticipant: ${PARTIPANT}\nSeed: ${RNG_SEED}`;
 }
 
 function download(filename, text, mime){
