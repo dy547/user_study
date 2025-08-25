@@ -61,6 +61,7 @@
           <button id="btn-toggle">Toggle A/B (Space)</button>
           <button id="btn-pick-a" class="primary">Select A (F)</button>
           <button id="btn-pick-b" class="primary">Select B (J)</button>
+          <button id="btn-next-image" class="primary" style="display:none;">Next Image</button>
         </div>
       </div>
       <div class="col">
@@ -87,8 +88,6 @@ const METHODS = ["methodA","methodB"];
 const IMAGES  = ["sample1","sample2"];
 const IMG_EXT = "png";
 const BASE_CROP = 768;
-
-// This is the line that was removed. The jspsych.js file already creates the jsPsych object.
 
 const params = new URLSearchParams(location.search);
 const PARTICIPANT = params.get('pid') || 'PILOT';
@@ -168,6 +167,14 @@ function startImage(index){
   current.order = [METHODS[0]]; current.pending = METHODS.slice(1);
   const gtImg = cache.get(asset('gt', current.imageId));
   current.crop = fixedCrops[current.imageId] || randomCropCoord(gtImg);
+
+  // MODIFIED: Ensure correct buttons are visible at the start of a trial
+  btnNextImage.style.display = 'none';
+  btnPickA.style.display = 'inline-block';
+  btnPickB.style.display = 'inline-block';
+  btnPickA.disabled = false;
+  btnPickB.disabled = false;
+  
   startInsertion();
 }
 
@@ -182,6 +189,10 @@ function startInsertion(){
 }
 
 function handleDecision(pick){
+  // MODIFIED: Disable selection buttons after a choice is made
+  btnPickA.disabled = true;
+  btnPickB.disabled = true;
+
   jsPsych.data.write({
     participant: PARTICIPANT, image_id: current.imageId,
     crop_x: current.crop.x, crop_y: current.crop.y, crop_size: current.crop.size,
@@ -204,9 +215,15 @@ function handleDecision(pick){
 
 function nextImage(){
   if(!fixedCrops[current.imageId]) fixedCrops[current.imageId] = {...current.crop};
+
+  // MODIFIED: Show next image button instead of auto-loading
   if(current.imageIndex + 1 < IMAGES.length){
-    preloadForImage(IMAGES[current.imageIndex+1]).then(()=>{ startImage(current.imageIndex+1); updateHUD(); });
-  }else{ finish(); }
+    btnPickA.style.display = 'none';
+    btnPickB.style.display = 'none';
+    btnNextImage.style.display = 'inline-block';
+  }else{
+    finish();
+  }
 }
 
 function redraw(){
@@ -230,13 +247,15 @@ const elSetup = document.getElementById('setup');
 const elTrial = document.getElementById('trial');
 const elDone  = document.getElementById('done');
 const elStatus= document.getElementById('status');
+// NEW: Get the new button element
+const btnNextImage = document.getElementById('btn-next-image');
 
 btnStart.addEventListener('click', async ()=>{
   elStatus.textContent = 'Preloading...';
   try {
     await preloadForImage(IMAGES[0]);
     elSetup.style.display = 'none'; elTrial.style.display = 'block';
-    startImage(0); updateHUD();
+    startImage(0);
   } catch (error) {
     elStatus.textContent = 'Error: Could not load images. Please check the assets folder and the browser console.';
     console.error("Preloading failed:", error);
@@ -255,12 +274,28 @@ btnLockCrop.addEventListener('click', ()=>{
   fixedCrops[current.imageId] = {...current.crop}; btnRandCrop.disabled = true;
 });
 
+// NEW: Event listener for the "Next Image" button
+btnNextImage.addEventListener('click', async () => {
+  const nextImageIndex = current.imageIndex + 1;
+  elStatus.textContent = 'Preloading...';
+  try {
+    await preloadForImage(IMAGES[nextImageIndex]);
+    elStatus.textContent = ''; // Clear status on success
+    startImage(nextImageIndex);
+  } catch (error) {
+     elStatus.textContent = `Error: Could not load ${IMAGES[nextImageIndex]}. Please check the assets folder.`;
+     console.error("Preloading failed:", error);
+  }
+});
+
+
 window.addEventListener('keydown', (e)=>{
   if(elTrial.style.display==='none') return;
+  // MODIFIED: Do not trigger actions if the buttons are disabled or hidden
   if(e.key===' '){ e.preventDefault(); btnToggle.click(); }
-  if(e.key==='f' || e.key==='F'){ btnPickA.click(); }
-  if(e.key==='j' || e.key==='J'){ btnPickB.click(); }
-  if(e.key==='r' || e.key==='R'){ btnRandCrop.click(); }
+  if(!btnPickA.disabled && btnPickA.style.display !== 'none' && (e.key==='f' || e.key==='F')){ btnPickA.click(); }
+  if(!btnPickB.disabled && btnPickB.style.display !== 'none' && (e.key==='j' || e.key==='J')){ btnPickB.click(); }
+  if(!btnRandCrop.disabled && (e.key==='r' || e.key==='R')){ btnRandCrop.click(); }
   if(e.key==='Enter'){ btnLockCrop.click(); }
 });
 
