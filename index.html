@@ -2,9 +2,8 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
-  <title>HiFiC-style 2AFC · ABX (Debug Build)</title>
+  <title>HiFiC-style 2AFC · ABX (No-CDN)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="https://unpkg.com/jspsych@7/dist/jspsych.css">
   <style>
     :root{ --bg:#0b0d10; --fg:#e9eef3; --muted:#8a96a3; --acc:#55a6ff; --card:#11151a; --border:#1b2128; }
     html,body{height:100%} body{margin:0;background:var(--bg);color:var(--fg);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans;}
@@ -21,21 +20,20 @@
     button.primary{background:var(--acc);border-color:#2b78c5;color:#021020;font-weight:700}
     button:disabled{opacity:.55;cursor:not-allowed} .muted{color:var(--muted)} .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0c1218;border:1px solid var(--border);border-radius:6px;padding:2px 6px}
     .footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
-    a{color:var(--acc);text-decoration:none}
     .warn{padding:10px;border-radius:10px;background:#261b00;border:1px solid #5f4300;color:#ffcf66}
   </style>
 </head>
 <body>
 <header>
   <div class="bar">
-    <div class="title">HiFiC-style ABX · 2AFC (Debug)</div>
-    <div class="chip">右侧=GT；左侧=A/B；遇到问题会在下方显示缺失文件</div>
+    <div class="title">HiFiC-style ABX · 2AFC (No-CDN)</div>
+    <div class="chip">右侧=GT；左侧=A/B；此版本内置 jsPsych-lite，离网也能跑</div>
   </div>
 </header>
 <main>
   <div class="card" id="setup">
     <h2>实验设置</h2>
-    <div class="warn" id="diag">诊断区：尚无错误。</div>
+    <div class="warn" id="diag">诊断：无</div>
     <p class="muted">路径示例：<code>assets/gt/sample1.png</code>、<code>assets/methodA/sample1.png</code>、<code>assets/methodB/sample1.png</code></p>
     <div class="panel">
       <button id="btn-start" class="primary">开始实验</button>
@@ -78,7 +76,31 @@
   </div>
 </main>
 
-<script src="https://unpkg.com/jspsych@7/dist/jspsych.js"></script>
+<!-- jsPsych-lite fallback (minimal API) -->
+<script>
+(function(){
+  if(window.initJsPsych) return;
+  console.warn('[jsPsych-lite] Using built-in minimal stub.');
+  function DataStore(){ this.rows=[]; }
+  DataStore.prototype.write=function(obj){ this.rows.push(obj); };
+  DataStore.prototype.get=function(){
+    const rows=this.rows.slice();
+    function csvEscape(s){ s = (s==null?'':String(s)); if(/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"'; return s; }
+    return {
+      count:()=>rows.length,
+      csv:()=>{
+        const keys=[...rows.reduce((set,r)=>{Object.keys(r).forEach(k=>set.add(k));return set;}, new Set())];
+        const head=keys.join(',');
+        const body=rows.map(r=>keys.map(k=>csvEscape(r[k])).join(',')).join('\n');
+        return head+'\n'+body;
+      },
+      json:(pretty)=> JSON.stringify(rows, null, pretty?2:0)
+    };
+  };
+  window.initJsPsych = function(){ return { data: new DataStore() }; };
+})();
+</script>
+
 <script>
 const METHODS = ["methodA","methodB"];
 const IMAGES  = ["sample1","sample2"];
@@ -205,9 +227,7 @@ function nextImage(){
   if(!fixedCrops[current.imageId]) fixedCrops[current.imageId] = {...current.crop};
   if(current.imageIndex + 1 < IMAGES.length){
     preloadForImage(IMAGES[current.imageIndex+1]).then((res)=>{
-      if(!res.ok){
-        elDiag.innerHTML = '❌ 缺失文件（下一图）：<br>' + res.missing.join('<br>');
-      }
+      if(!res.ok){ elDiag.innerHTML = '❌ 缺失文件：<br>' + res.missing.join('<br>'); }
       startImage(current.imageIndex+1); updateHUD();
     });
   }else{ finish(); }
@@ -239,9 +259,8 @@ btnStart.addEventListener('click', async ()=>{
   elStatus.textContent = '预加载中…';
   const res = await preloadForImage(IMAGES[0]);
   if(!res.ok){
-    elDiag.innerHTML = '❌ 预加载失败：以下文件找不到（大小写/后缀/路径不符）<br>' + res.missing.join('<br>');
+    elDiag.innerHTML = '❌ 预加载失败：以下文件找不到或无法加载：<br>' + res.missing.join('<br>');
     elStatus.textContent = '请修复缺失文件后刷新页面。';
-    alert('预加载失败：\n' + res.missing.join('\n') + '\n\n请检查文件是否存在、大小写/后缀是否一致。');
     return;
   }
   elSetup.style.display = 'none'; elTrial.style.display = 'block';
@@ -276,11 +295,13 @@ function finish(){
   document.getElementById('summary').textContent = `条目数：${n}\n参与者：${PARTICIPANT}\n种子：${RNG_SEED}`;
 }
 function download(filename, text, mime){
+  const s = jsPsych.data.get();
+  const fn = typeof s.csv === 'function' ? s.csv() : s.get().csv(); // be tolerant
   const blob = new Blob([text], {type: mime}); const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = filename; a.click();
 }
-btnDownload.addEventListener('click', ()=>{ const csv = jsPsych.data.get().csv(); download(`results_${PARTICIPANT}.csv`, csv, 'text/csv;charset=utf-8;'); });
-btnJSON.addEventListener('click', ()=>{ const json = jsPsych.data.get().json(true); download(`results_${PARTICIPANT}.json`, json, 'application/json'); });
+btnDownload.addEventListener('click', ()=>{ const csv = jsPsych.data.get().csv(); const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`results_${PARTICIPANT}.csv`; a.click(); });
+btnJSON.addEventListener('click', ()=>{ const json = jsPsych.data.get().json(true); const blob = new Blob([json], {type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`results_${PARTICIPANT}.json`; a.click(); });
 
 document.getElementById('status').textContent = `就绪。方法 ${METHODS.length} · 图像 ${IMAGES.length}`;
 </script>
