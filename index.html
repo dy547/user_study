@@ -168,7 +168,6 @@ function startImage(index){
   const gtImg = cache.get(asset('gt', current.imageId));
   current.crop = fixedCrops[current.imageId] || randomCropCoord(gtImg);
 
-  // MODIFIED: Ensure correct buttons are visible at the start of a trial
   btnNextImage.style.display = 'none';
   btnPickA.style.display = 'inline-block';
   btnPickB.style.display = 'inline-block';
@@ -189,17 +188,18 @@ function startInsertion(){
 }
 
 function handleDecision(pick){
-  // MODIFIED: Disable selection buttons after a choice is made
   btnPickA.disabled = true;
   btnPickB.disabled = true;
 
-  jsPsych.data.write({
+  // THIS IS THE CORRECTED LINE:
+  jsPsych.data.push({
     participant: PARTICIPANT, image_id: current.imageId,
     crop_x: current.crop.x, crop_y: current.crop.y, crop_size: current.crop.size,
     method_A: current.pair.A, method_B: current.pair.B,
     shown_first: current.shownFirst, choice: pick,
     dpr: dpr, viewport_w: window.innerWidth, viewport_h: window.innerHeight, ts: Date.now()
   });
+  
   if(pick==='A'){ current.high = current.mid; } else { current.low = current.mid + 1; }
   current.comparisonsDone++;
   if(current.low >= current.high){
@@ -216,7 +216,6 @@ function handleDecision(pick){
 function nextImage(){
   if(!fixedCrops[current.imageId]) fixedCrops[current.imageId] = {...current.crop};
 
-  // MODIFIED: Show next image button instead of auto-loading
   if(current.imageIndex + 1 < IMAGES.length){
     btnPickA.style.display = 'none';
     btnPickB.style.display = 'none';
@@ -247,7 +246,6 @@ const elSetup = document.getElementById('setup');
 const elTrial = document.getElementById('trial');
 const elDone  = document.getElementById('done');
 const elStatus= document.getElementById('status');
-// NEW: Get the new button element
 const btnNextImage = document.getElementById('btn-next-image');
 
 btnStart.addEventListener('click', async ()=>{
@@ -274,13 +272,12 @@ btnLockCrop.addEventListener('click', ()=>{
   fixedCrops[current.imageId] = {...current.crop}; btnRandCrop.disabled = true;
 });
 
-// NEW: Event listener for the "Next Image" button
 btnNextImage.addEventListener('click', async () => {
   const nextImageIndex = current.imageIndex + 1;
   elStatus.textContent = 'Preloading...';
   try {
     await preloadForImage(IMAGES[nextImageIndex]);
-    elStatus.textContent = ''; // Clear status on success
+    elStatus.textContent = ''; 
     startImage(nextImageIndex);
   } catch (error) {
      elStatus.textContent = `Error: Could not load ${IMAGES[nextImageIndex]}. Please check the assets folder.`;
@@ -288,10 +285,8 @@ btnNextImage.addEventListener('click', async () => {
   }
 });
 
-
 window.addEventListener('keydown', (e)=>{
   if(elTrial.style.display==='none') return;
-  // MODIFIED: Do not trigger actions if the buttons are disabled or hidden
   if(e.key===' '){ e.preventDefault(); btnToggle.click(); }
   if(!btnPickA.disabled && btnPickA.style.display !== 'none' && (e.key==='f' || e.key==='F')){ btnPickA.click(); }
   if(!btnPickB.disabled && btnPickB.style.display !== 'none' && (e.key==='j' || e.key==='J')){ btnPickB.click(); }
