@@ -2,8 +2,9 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
-  <title>HiFiC-style 2AFC · ABX (No-CDN)</title>
+  <title>HiFiC-style 2AFC · ABX (GitHub Pages Demo)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/jspsych@7/dist/jspsych.css">
   <style>
     :root{ --bg:#0b0d10; --fg:#e9eef3; --muted:#8a96a3; --acc:#55a6ff; --card:#11151a; --border:#1b2128; }
     html,body{height:100%} body{margin:0;background:var(--bg);color:var(--fg);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans;}
@@ -20,21 +21,25 @@
     button.primary{background:var(--acc);border-color:#2b78c5;color:#021020;font-weight:700}
     button:disabled{opacity:.55;cursor:not-allowed} .muted{color:var(--muted)} .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0c1218;border:1px solid var(--border);border-radius:6px;padding:2px 6px}
     .footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
-    .warn{padding:10px;border-radius:10px;background:#261b00;border:1px solid #5f4300;color:#ffcf66}
+    a{color:var(--acc);text-decoration:none}
   </style>
 </head>
 <body>
 <header>
   <div class="bar">
-    <div class="title">HiFiC-style ABX · 2AFC (No-CDN)</div>
-    <div class="chip">右侧=GT；左侧=A/B；此版本内置 jsPsych-lite，离网也能跑</div>
+    <div class="title">HiFiC‑style ABX · 2AFC</div>
+    <div class="chip">右侧=原图裁剪（GT）；左侧=A/B 切换；选更像 GT</div>
   </div>
 </header>
 <main>
   <div class="card" id="setup">
     <h2>实验设置</h2>
-    <div class="warn" id="diag">诊断：无</div>
-    <p class="muted">路径示例：<code>assets/gt/sample1.png</code>、<code>assets/methodA/sample1.png</code>、<code>assets/methodB/sample1.png</code></p>
+    <p class="muted">把图片放到 <code>assets/gt</code>、<code>assets/methodA</code>、<code>assets/methodB</code> 目录下，文件名一致（如 <code>sample1.png</code>）。本 Demo 已内置两张示例图。</p>
+    <ul class="muted">
+      <li>键盘：<span class="kbd">空格</span> 切换 A/B，<span class="kbd">F</span> 选 A，<span class="kbd">J</span> 选 B。</li>
+      <li><span class="kbd">R</span> 换随机裁剪（仅在确认前），<span class="kbd">Enter</span> 确认裁剪并锁定。</li>
+      <li>URL 参数：<span class="kbd">?pid=001&seed=42</span> 设置被试 ID 和随机种子。</li>
+    </ul>
     <div class="panel">
       <button id="btn-start" class="primary">开始实验</button>
       <button id="btn-download" disabled>下载 CSV</button>
@@ -76,31 +81,7 @@
   </div>
 </main>
 
-<!-- jsPsych-lite fallback (minimal API) -->
-<script>
-(function(){
-  if(window.initJsPsych) return;
-  console.warn('[jsPsych-lite] Using built-in minimal stub.');
-  function DataStore(){ this.rows=[]; }
-  DataStore.prototype.write=function(obj){ this.rows.push(obj); };
-  DataStore.prototype.get=function(){
-    const rows=this.rows.slice();
-    function csvEscape(s){ s = (s==null?'':String(s)); if(/[",\n]/.test(s)) return '"'+s.replace(/"/g,'""')+'"'; return s; }
-    return {
-      count:()=>rows.length,
-      csv:()=>{
-        const keys=[...rows.reduce((set,r)=>{Object.keys(r).forEach(k=>set.add(k));return set;}, new Set())];
-        const head=keys.join(',');
-        const body=rows.map(r=>keys.map(k=>csvEscape(r[k])).join(',')).join('\n');
-        return head+'\n'+body;
-      },
-      json:(pretty)=> JSON.stringify(rows, null, pretty?2:0)
-    };
-  };
-  window.initJsPsych = function(){ return { data: new DataStore() }; };
-})();
-</script>
-
+<script src="jspsych.js"></script>
 <script>
 const METHODS = ["methodA","methodB"];
 const IMAGES  = ["sample1","sample2"];
@@ -129,18 +110,16 @@ const cache = new Map();
 function asset(method, imageId){ return method==='gt' ? `assets/gt/${imageId}.${IMG_EXT}` : `assets/${method}/${imageId}.${IMG_EXT}`; }
 function loadImage(path){
   if(cache.has(path)) return Promise.resolve(cache.get(path));
-  return new Promise((resolve, reject)=>{
+  return new Promise((res,rej)=>{
     const img = new Image();
-    img.onload = ()=>{ cache.set(path, img); resolve(img); };
-    img.onerror = ()=>{ reject(new Error('404 ' + path)); };
+    img.onload = () => { cache.set(path, img); res(img) };
+    img.onerror = (err) => { console.error(`Failed to load image: ${path}`); rej(err); };
     img.src = path;
   });
 }
 async function preloadForImage(imageId){
   const paths = [asset('gt',imageId), ...METHODS.map(m=>asset(m,imageId))];
-  const results = await Promise.allSettled(paths.map(p=>loadImage(p)));
-  const missing = results.map((r,i)=> r.status==='rejected' ? paths[i] : null).filter(Boolean);
-  return {ok: missing.length===0, missing, tried: paths};
+  for(const p of paths){ await loadImage(p); }
 }
 
 function fitCropSize(){
@@ -171,7 +150,6 @@ const elProgress = document.getElementById('progress');
 const elCropInfo = document.getElementById('cropinfo');
 const elImgMeta  = document.getElementById('imgmeta');
 const elLeftLabel= document.getElementById('left-label');
-const elDiag = document.getElementById('diag');
 function updateHUD(){
   elProgress.textContent = `图 ${current.imageIndex+1}/${IMAGES.length} · 已比较 ${current.comparisonsDone} 对`;
   elCropInfo.textContent = current.crop ? `  crop=(${current.crop.x},${current.crop.y},${current.crop.size})` : '';
@@ -226,10 +204,7 @@ function handleDecision(pick){
 function nextImage(){
   if(!fixedCrops[current.imageId]) fixedCrops[current.imageId] = {...current.crop};
   if(current.imageIndex + 1 < IMAGES.length){
-    preloadForImage(IMAGES[current.imageIndex+1]).then((res)=>{
-      if(!res.ok){ elDiag.innerHTML = '❌ 缺失文件：<br>' + res.missing.join('<br>'); }
-      startImage(current.imageIndex+1); updateHUD();
-    });
+    preloadForImage(IMAGES[current.imageIndex+1]).then(()=>{ startImage(current.imageIndex+1); updateHUD(); });
   }else{ finish(); }
 }
 
@@ -257,14 +232,14 @@ const elStatus= document.getElementById('status');
 
 btnStart.addEventListener('click', async ()=>{
   elStatus.textContent = '预加载中…';
-  const res = await preloadForImage(IMAGES[0]);
-  if(!res.ok){
-    elDiag.innerHTML = '❌ 预加载失败：以下文件找不到或无法加载：<br>' + res.missing.join('<br>');
-    elStatus.textContent = '请修复缺失文件后刷新页面。';
-    return;
+  try {
+    await preloadForImage(IMAGES[0]);
+    elSetup.style.display = 'none'; elTrial.style.display = 'block';
+    startImage(0); updateHUD();
+  } catch (error) {
+    elStatus.textContent = '错误：无法加载图片。请检查 assets 文件夹和浏览器控制台。';
+    console.error("Preloading failed:", error);
   }
-  elSetup.style.display = 'none'; elTrial.style.display = 'block';
-  startImage(0); updateHUD();
 });
 
 btnToggle.addEventListener('click', ()=>{ current.showing = (current.showing==='A') ? 'B' : 'A'; redraw(); });
@@ -295,13 +270,11 @@ function finish(){
   document.getElementById('summary').textContent = `条目数：${n}\n参与者：${PARTICIPANT}\n种子：${RNG_SEED}`;
 }
 function download(filename, text, mime){
-  const s = jsPsych.data.get();
-  const fn = typeof s.csv === 'function' ? s.csv() : s.get().csv(); // be tolerant
   const blob = new Blob([text], {type: mime}); const a = document.createElement('a');
   a.href = URL.createObjectURL(blob); a.download = filename; a.click();
 }
-btnDownload.addEventListener('click', ()=>{ const csv = jsPsych.data.get().csv(); const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`results_${PARTICIPANT}.csv`; a.click(); });
-btnJSON.addEventListener('click', ()=>{ const json = jsPsych.data.get().json(true); const blob = new Blob([json], {type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`results_${PARTICIPANT}.json`; a.click(); });
+btnDownload.addEventListener('click', ()=>{ const csv = jsPsych.data.get().csv(); download(`results_${PARTICIPANT}.csv`, csv, 'text/csv;charset=utf-8;'); });
+btnJSON.addEventListener('click', ()=>{ const json = jsPsych.data.get().json(true); download(`results_${PARTICIPANT}.json`, json, 'application/json'); });
 
 document.getElementById('status').textContent = `就绪。方法 ${METHODS.length} · 图像 ${IMAGES.length}`;
 </script>
