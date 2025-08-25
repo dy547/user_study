@@ -89,7 +89,7 @@ const METHODS = ["BPG_0db", "ADJSCC_0db", "WDJSCC_0db"];
 const IMAGES  = ["kodim01", "kodim02", "kodim03", "kodim04", "kodim05", "kodim06", "kodim07", "kodim08", "kodim09", "kodim10", "kodim11", "kodim12", "kodim13", "kodim14", "kodim15", "kodim16", "kodim17", "kodim18", "kodim19", "kodim20", "kodim21", "kodim22", "kodim23", "kodim24"];
 const IMG_EXT = "png";
 const BASE_CROP = 512;
-const GOLDEN_QUESTION_PROBABILITY = 0.1; // NEW: 10% chance of a golden question
+const GOLDEN_QUESTION_PROBABILITY = 0.1;
 
 // SETUP
 const params = new URLSearchParams(location.search);
@@ -205,12 +205,11 @@ function startInsertion(){
     let method1 = current.next;
     let method2 = current.order[current.mid];
 
-    // NEW: Golden Question Logic
     if (rnd() < GOLDEN_QUESTION_PROBABILITY) {
         current.isGolden = true;
         const methodsToPickFrom = [...current.order, current.next];
         method1 = methodsToPickFrom[irand(0, methodsToPickFrom.length - 1)];
-        method2 = 'gt'; // One of the pair is the ground truth
+        method2 = 'gt'; 
     }
 
     current.pair = randomizedPair(method1, method2);
@@ -238,7 +237,6 @@ function handleDecision(pick){
     participant: PARTICIPANT,
     is_golden: current.isGolden ? 1 : 0,
     correct_choice: current.correctChoice,
-    // Extra columns
     crop_x: current.crop.x,
     crop_y: current.crop.y,
     crop_size: current.crop.size,
@@ -249,7 +247,6 @@ function handleDecision(pick){
     ts: Date.now()
   });
   
-  // For golden questions, we don't update the order, just move on
   if (current.isGolden) {
       startInsertion();
       return;
@@ -374,8 +371,9 @@ function finish(){
   elSetup.style.display = 'block'; 
   btnDownload.disabled = false;
   btnJSON.disabled = false;
-  const n = jsPsych.data.get().count();
-  document.getElementById('summary').textContent = `Entries: ${n}\nParticipant: ${PARTIPANT}\nSeed: ${RNG_SEED}`;
+  // THIS IS THE CORRECTED LINE
+  const n = jsPsych.data.count();
+  document.getElementById('summary').textContent = `Entries: ${n}\nParticipant: ${PARTICIPANT}\nSeed: ${RNG_SEED}`;
 }
 
 function download(filename, text, mime){
@@ -385,8 +383,8 @@ function download(filename, text, mime){
   a.download = filename;
   a.click();
 }
-btnDownload.addEventListener('click', ()=>{ const csv = jsPsych.data.get().csv(); download(`results_${PARTIPANT}.csv`, csv, 'text/csv;charset=utf-8;'); });
-btnJSON.addEventListener('click', ()=>{ const json = jsPsych.data.get().json(true); download(`results_${PARTIPANT}.json`, json, 'application/json'); });
+btnDownload.addEventListener('click', ()=>{ const csv = jsPsych.data.get().csv(); download(`results_${PARTICIPANT}.csv`, csv, 'text/csv;charset=utf-8;'); });
+btnJSON.addEventListener('click', ()=>{ const json = jsPsych.data.get().json(true); download(`results_${PARTICIPANT}.json`, json, 'application/json'); });
 
 document.getElementById('status').textContent = `Ready. ${METHODS.length} methods · ${IMAGES.length} images`;
 </script>
