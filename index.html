@@ -163,6 +163,9 @@ function randomizedPair(x,y){
 }
 
 function startImage(index){
+  // THIS IS THE FIX: Re-enable the random crop button for the new image
+  btnRandCrop.disabled = false;
+
   current.imageIndex = index; current.imageId = IMAGES[index];
   current.order = [METHODS[0]]; current.pending = METHODS.slice(1);
   const gtImg = cache.get(asset('gt', current.imageId));
@@ -191,7 +194,6 @@ function handleDecision(pick){
   btnPickA.disabled = true;
   btnPickB.disabled = true;
 
-  // THIS IS THE CORRECTED LINE:
   jsPsych.data.push({
     participant: PARTICIPANT, image_id: current.imageId,
     crop_x: current.crop.x, crop_y: current.crop.y, crop_size: current.crop.size,
@@ -269,7 +271,8 @@ btnRandCrop.addEventListener('click', ()=>{
   current.crop = randomCropCoord(gtImg); redraw();
 });
 btnLockCrop.addEventListener('click', ()=>{
-  fixedCrops[current.imageId] = {...current.crop}; btnRandCrop.disabled = true;
+  fixedCrops[current.imageId] = {...current.crop};
+  btnRandCrop.disabled = true;
 });
 
 btnNextImage.addEventListener('click', async () => {
