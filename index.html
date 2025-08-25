@@ -371,7 +371,6 @@ function finish(){
   elSetup.style.display = 'block'; 
   btnDownload.disabled = false;
   btnJSON.disabled = false;
-  // THIS IS THE CORRECTED LINE
   const n = jsPsych.data.count();
   document.getElementById('summary').textContent = `Entries: ${n}\nParticipant: ${PARTICIPANT}\nSeed: ${RNG_SEED}`;
 }
@@ -383,8 +382,10 @@ function download(filename, text, mime){
   a.download = filename;
   a.click();
 }
-btnDownload.addEventListener('click', ()=>{ const csv = jsPsych.data.get().csv(); download(`results_${PARTICIPANT}.csv`, csv, 'text/csv;charset=utf-8;'); });
-btnJSON.addEventListener('click', ()=>{ const json = jsPsych.data.get().json(true); download(`results_${PARTICIPANT}.json`, json, 'application/json'); });
+
+// THIS IS THE FINAL FIX: Removed .get() from both listeners
+btnDownload.addEventListener('click', ()=>{ const csv = jsPsych.data.csv(); download(`results_${PARTICIPANT}.csv`, csv, 'text/csv;charset=utf-8;'); });
+btnJSON.addEventListener('click', ()=>{ const json = jsPsych.data.json(true); download(`results_${PARTICIPANT}.json`, json, 'application/json'); });
 
 document.getElementById('status').textContent = `Ready. ${METHODS.length} methods · ${IMAGES.length} images`;
 </script>
