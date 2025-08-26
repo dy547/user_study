@@ -22,7 +22,6 @@
     button:disabled{opacity:.55;cursor:not-allowed} .muted{color:var(--muted)} .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0c1218;border:1px solid var(--border);border-radius:6px;padding:2px 6px}
     .footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
     a{color:var(--acc);text-decoration:none}
-    /* NEW: Style for the selected button */
     button.selected { border-color: var(--fg); box-shadow: 0 0 8px var(--acc); }
   </style>
 </head>
@@ -119,7 +118,7 @@ let current = {
     order: [], pending: [], low: 0, high: 0, mid: 0, candidate: null, next: null,
     comparisonsDone: 0, shownFirst: 'A',
     trialStartTime: 0, toggleCount: 0, isGolden: false, correctChoice: null,
-    pendingChoice: null // NEW: To hold the choice before confirming
+    pendingChoice: null
 };
 
 const cache = new Map();
@@ -191,6 +190,7 @@ function startImage(index){
   btnPickA.style.display = 'inline-block';
   btnPickB.style.display = 'inline-block';
   btnPickSame.style.display = 'inline-block';
+  btnConfirm.style.display = 'inline-block';
   startInsertion();
 }
 
@@ -201,7 +201,6 @@ function startInsertion(){
     current.toggleCount = 0;
     current.isGolden = false;
     current.correctChoice = null;
-    current.pendingChoice = null;
 
     current.next = current.pending.shift();
     current.low = 0;
@@ -221,8 +220,8 @@ function startInsertion(){
     current.pair = randomizedPair(method1, method2);
     
     if (current.isGolden) {
-        if (current.pair.A === 'gt') current.correctChoice = 'B';
-        if (current.pair.B === 'gt') current.correctChoice = 'A';
+        if (current.pair.A === 'gt') current.correctChoice = 'A';
+        if (current.pair.B === 'gt') current.correctChoice = 'B';
     }
 
     current.showing = current.pair.startWith;
@@ -231,23 +230,24 @@ function startInsertion(){
 }
 
 function handleDecision(pick){
-  const decisionTime = performance.now() - current.trialStartTime;
+  // NEW: Logic to calculate modelProbability based on your rules
+  let modelProb = ''; 
+  if (current.isGolden) {
+      modelProb = (pick === current.correctChoice) ? 1 : 0;
+  }
+
+  // Data object matches the 'answers.csv' format
   jsPsych.data.push({
-    method_A: current.pair.A,
-    method_B: current.pair.B,
-    choice: pick,
-    image_id: current.imageId,
-    participant: PARTICIPANT,
-    is_golden: current.isGolden ? 1 : 0,
-    correct_choice: current.correctChoice,
-    crop_x: current.crop.x,
-    crop_y: current.crop.y,
-    crop_size: current.crop.size,
-    shown_first: current.shownFirst,
-    shown_at_click: current.showing,
-    decision_time_ms: decisionTime,
-    toggle_count: current.toggleCount,
-    ts: Date.now()
+    methodA: current.pair.A,
+    methodB: current.pair.B,
+    isGolden: current.isGolden ? 1 : 0,
+    originalName: current.imageId,
+    answerValue: pick,
+    answerer: PARTICIPANT,
+    wasDiscarded: 0,
+    modelProbability: modelProb, // Use the calculated value
+    answeredAt: Date.now(),
+    crop: `(${current.crop.x}, ${current.crop.y}, ${current.crop.size})`
   });
   
   if (current.isGolden) {
@@ -257,7 +257,6 @@ function handleDecision(pick){
 
   if(pick==='A'){ current.high = current.mid; } 
   else if(pick==='B') { current.low = current.mid + 1; }
-  // If choice is 'draw', low and high don't change, effectively narrowing the search without moving the boundary
   
   current.comparisonsDone++;
   if(current.low >= current.high){
@@ -295,14 +294,12 @@ function nextImage(){
 }
 
 function redraw(){
-  // Reset UI state for a new decision
   btnPickA.disabled = false;
   btnPickB.disabled = false;
   btnPickSame.disabled = false;
   btnConfirm.disabled = true;
   [btnPickA, btnPickB, btnPickSame].forEach(btn => btn.classList.remove('selected'));
   current.pendingChoice = null;
-
   updateHUD();
   const {imageId, crop, showing, pair} = current;
   const leftKey = (showing==='A') ? pair.A : pair.B;
@@ -325,7 +322,6 @@ const elTrial = document.getElementById('trial');
 const elDone  = document.getElementById('done');
 const elStatus= document.getElementById('status');
 const btnNextImage = document.getElementById('btn-next-image');
-// NEW: Get the new buttons
 const btnPickSame = document.getElementById('btn-pick-same');
 const btnConfirm = document.getElementById('btn-confirm');
 
@@ -345,10 +341,9 @@ btnStart.addEventListener('click', async ()=>{
 btnToggle.addEventListener('click', ()=>{
   current.toggleCount++; 
   current.showing = (current.showing==='A') ? 'B' : 'A';
-  redraw();
+  // redraw(); This is not needed as makePendingChoice will not be called
 });
 
-// NEW: Function to handle pre-selection
 function makePendingChoice(choice) {
     current.pendingChoice = choice;
     [btnPickA, btnPickB, btnPickSame].forEach(btn => btn.classList.remove('selected'));
@@ -358,18 +353,15 @@ function makePendingChoice(choice) {
     btnConfirm.disabled = false;
 }
 
-// MODIFIED: Choice buttons now make a pending choice instead of handling the decision directly
 btnPickA.addEventListener('click', ()=>{ makePendingChoice('A'); });
 btnPickB.addEventListener('click', ()=>{ makePendingChoice('B'); });
 btnPickSame.addEventListener('click', ()=>{ makePendingChoice('draw'); });
 
-// NEW: Confirm button listener
 btnConfirm.addEventListener('click', () => {
     if (current.pendingChoice) {
         handleDecision(current.pendingChoice);
     }
 });
-
 
 btnRandCrop.addEventListener('click', ()=>{
   if(fixedCrops[current.imageId]) return;
@@ -386,7 +378,6 @@ btnNextImage.addEventListener('click', async () => {
   const nextImageIndex = current.imageIndex + 1;
   elStatus.textContent = 'Preloading...';
   try {
-    // Show all choice buttons for the next trial
     btnPickA.style.display = 'inline-block';
     btnPickB.style.display = 'inline-block';
     btnPickSame.style.display = 'inline-block';
@@ -408,9 +399,9 @@ window.addEventListener('keydown', (e)=>{
   if(btnPickSame.style.display !== 'none' && (e.key==='s' || e.key==='S')){ btnPickSame.click(); }
   if(!btnRandCrop.disabled && (e.key==='r' || e.key==='R')){ btnRandCrop.click(); }
   if(e.key==='Enter'){ 
-      if(!btnConfirm.disabled) { // If confirm is active, Enter clicks it
+      if(!btnConfirm.disabled) {
           btnConfirm.click();
-      } else { // Otherwise, it locks the crop
+      } else {
           btnLockCrop.click();
       }
   }
