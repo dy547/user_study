@@ -1,95 +1,95 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>HiFiC-style 2AFC · ABX (GitHub Pages Demo)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="https://unpkg.com/jspsych@7/dist/jspsych.css">
-  <style>
-    :root{ --bg:#0b0d10; --fg:#e9eef3; --muted:#8a96a3; --acc:#55a6ff; --card:#11151a; --border:#1b2128; }
-    html,body{height:100%} body{margin:0;background:var(--bg);color:var(--fg);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans;}
-    header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg),rgba(11,13,16,.6));backdrop-filter:saturate(1.2) blur(6px);z-index:10;border-bottom:1px solid var(--border)}
-    .bar{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
-    .title{font-weight:800} .chip{font-size:12px;color:var(--muted)}
-    main{max-width:1200px;margin:20px auto;padding:0 16px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
-    .col{display:flex;flex-direction:column;gap:10px}
-    canvas{background:#000;border:1px solid var(--border);border-radius:12px;display:block}
-    .panel{display:flex;gap:8px;flex-wrap:wrap}
-    button{background:#10161d;border:1px solid var(--border);color:var(--fg);padding:8px 12px;border-radius:10px;cursor:pointer}
-    button.primary{background:var(--acc);border-color:#2b78c5;color:#021020;font-weight:700}
-    button:disabled{opacity:.55;cursor:not-allowed} .muted{color:var(--muted)} .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0c1218;border:1px solid var(--border);border-radius:6px;padding:2px 6px}
-    .footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
-    a{color:var(--acc);text-decoration:none}
-    button.selected { border-color: var(--fg); box-shadow: 0 0 8px var(--acc); }
-  </style>
+  <meta charset="utf-8" />
+  <title>HiFiC-style 2AFC · ABX (GitHub Pages Demo)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://unpkg.com/jspsych@7/dist/jspsych.css">
+  <style>
+    :root{ --bg:#0b0d10; --fg:#e9eef3; --muted:#8a96a3; --acc:#55a6ff; --card:#11151a; --border:#1b2128; }
+    html,body{height:100%} body{margin:0;background:var(--bg);color:var(--fg);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans;}
+    header{position:sticky;top:0;background:linear-gradient(180deg,var(--bg),rgba(11,13,16,.6));backdrop-filter:saturate(1.2) blur(6px);z-index:10;border-bottom:1px solid var(--border)}
+    .bar{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:12px}
+    .title{font-weight:800} .chip{font-size:12px;color:var(--muted)}
+    main{max-width:1200px;margin:20px auto;padding:0 16px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+    .col{display:flex;flex-direction:column;gap:10px}
+    canvas{background:#000;border:1px solid var(--border);border-radius:12px;display:block}
+    .panel{display:flex;gap:8px;flex-wrap:wrap}
+    button{background:#10161d;border:1px solid var(--border);color:var(--fg);padding:8px 12px;border-radius:10px;cursor:pointer}
+    button.primary{background:var(--acc);border-color:#2b78c5;color:#021020;font-weight:700}
+    button:disabled{opacity:.55;cursor:not-allowed} .muted{color:var(--muted)} .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0c1218;border:1px solid var(--border);border-radius:6px;padding:2px 6px}
+    .footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
+    a{color:var(--acc);text-decoration:none}
+    button.selected { border-color: var(--fg); box-shadow: 0 0 8px var(--acc); }
+  </style>
 </head>
 <body>
 <header>
-  <div class="bar">
-    <div class="title">HiFiC‑style ABX · 2AFC</div>
-    <div class="chip">Right=Cropped Original (GT); Left=Toggle A/B; Pick the one closer to GT</div>
-  </div>
+  <div class="bar">
+    <div class="title">HiFiC‑style ABX · 2AFC</div>
+    <div class="chip">Right=Cropped Original (GT); Left=Toggle A/B; Pick the one closer to GT</div>
+  </div>
 </header>
 <main>
-  <div class="card" id="setup">
-    <h2>Experiment Setup</h2>
-    <p class="muted">Place your images in the <code>assets/gt</code> and method directories, with matching filenames.</p>
-    <ul class="muted">
-      <li>Keyboard: <span class="kbd">Space</span> to toggle A/B, <span class="kbd">F</span> to select A, <span class="kbd">J</span> to select B, <span class="kbd">S</span> for Same.</li>
-      <li><span class="kbd">R</span> for a new random crop (before locking), <span class="kbd">Enter</span> to confirm and lock the crop.</li>
-      <li>URL Parameters: <span class="kbd">?pid=001&seed=42</span> to set participant ID and random seed.</li>
-    </ul>
-    <div class="panel">
-      <button id="btn-start" class="primary">Start Experiment</button>
-      <button id="btn-download" disabled>Download CSV</button>
-      <button id="btn-json" disabled>Download JSON</button>
-    </div>
-    <p id="status" class="muted">Not started</p>
-  </div>
+  <div class="card" id="setup">
+    <h2>Experiment Setup</h2>
+    <p class="muted">Place your images in the <code>assets/gt</code> and method directories, with matching filenames.</p>
+    <ul class="muted">
+      <li>Keyboard: <span class="kbd">Space</span> to toggle A/B, <span class="kbd">F</span> to select A, <span class="kbd">J</span> to select B, <span class="kbd">S</span> for Same.</li>
+      <li><span class="kbd">R</span> for a new random crop (before locking), <span class="kbd">Enter</span> to confirm and lock the crop.</li>
+      <li>URL Parameters: <span class="kbd">?pid=001&seed=42</span> to set participant ID and random seed.</li>
+    </ul>
+    <div class="panel">
+      <button id="btn-start" class="primary">Start Experiment</button>
+      <button id="btn-download" disabled>Download CSV</button>
+      <button id="btn-json" disabled>Download JSON</button>
+    </div>
+    <p id="status" class="muted">Not started</p>
+  </div>
 
-  <div class="card" id="trial" style="display:none">
-    <div class="footer">
-      <div><span id="progress">Image 0/0 · Comparisons: 0</span> <span id="cropinfo" class="muted"></span></div>
-      <div id="imgmeta" class="muted"></div>
-    </div>
-    <div class="row">
-      <div class="col">
-        <div class="muted">Left: Method <span id="left-label">A</span> (Toggleable)</div>
-        <canvas id="canvas-left" width="512" height="512"></canvas>
-        <div class="panel">
-          <button id="btn-toggle">Toggle A/B (Space)</button>
-          <button id="btn-pick-a" class="primary">Select A (F)</button>
-          <button id="btn-pick-b" class="primary">Select B (J)</button>
-          <button id="btn-pick-same" class="primary">Same (S)</button>
-          <button id="btn-confirm" class="primary" disabled>Confirm</button>
-          <button id="btn-next-image" class="primary" style="display:none;">Next Image</button>
-        </div>
-      </div>
-      <div class="col">
-        <div class="muted">Right: Ground Truth (Same Crop)</div>
-        <canvas id="canvas-gt" width="512" height="512"></canvas>
-        <div class="panel">
-          <button id="btn-rand-crop">New Random Crop (R)</button>
-          <button id="btn-lock-crop" class="primary">Confirm Crop (Enter)</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="card" id="trial" style="display:none">
+    <div class="footer">
+      <div><span id="progress">Image 0/0 · Comparisons: 0</span> <span id="cropinfo" class="muted"></span></div>
+      <div id="imgmeta" class="muted"></div>
+    </div>
+    <div class="row">
+      <div class="col">
+        <div class="muted">Left: Method <span id="left-label">A</span> (Toggleable)</div>
+        <canvas id="canvas-left" width="512" height="512"></canvas>
+        <div class="panel">
+          <button id="btn-toggle">Toggle A/B (Space)</button>
+          <button id="btn-pick-a" class="primary">Select A (F)</button>
+          <button id="btn-pick-b" class="primary">Select B (J)</button>
+          <button id="btn-pick-same" class="primary">Same (S)</button>
+          <button id="btn-confirm" class="primary" disabled>Confirm</button>
+          <button id="btn-next-image" class="primary" style="display:none;">Next Image</button>
+        </div>
+      </div>
+      <div class="col">
+        <div class="muted">Right: Ground Truth (Same Crop)</div>
+        <canvas id="canvas-gt" width="512" height="512"></canvas>
+        <div class="panel">
+          <button id="btn-rand-crop">New Random Crop (R)</button>
+          <button id="btn-lock-crop" class="primary">Confirm Crop (Enter)</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-  <div class="card" id="done" style="display:none">
-    <h2>Complete ✅</h2>
-    <p>Click the buttons above to download the results as <b>CSV</b> or <b>JSON</b>.</p>
-    <pre id="summary" class="muted"></pre>
-  </div>
+  <div class="card" id="done" style="display:none">
+    <h2>Complete ✅</h2>
+    <p>Click the buttons above to download the results as <b>CSV</b> or <b>JSON</b>.</p>
+    <pre id="summary" class="muted"></pre>
+  </div>
 </main>
 
 <script src="jspsych.js"></script>
 <script>
 // CONFIGURATION
-const METHODS = ["BPG_0db", "ADJSCC_0db", "WDJSCC_0db", "BPG_10db", "ADJSCC_10db", "WDJSCC_10db"]; 
-const IMAGES  = ["kodim01", "kodim02", "kodim03", "kodim04", "kodim05", "kodim06", "kodim07", "kodim08", "kodim09", "kodim10", "kodim11", "kodim12", "kodim13", "kodim14", "kodim15", "kodim16", "kodim17", "kodim18", "kodim19", "kodim20", "kodim21", "kodim22", "kodim23", "kodim24"];
+const METHODS = ["BPG_0db", "ADJSCC_0db", "WDJSCC_0db", "BPG_10db", "ADJSCC_10db", "WDJSCC_10db"]; 
+const IMAGES  = ["kodim01", "kodim02", "kodim03", "kodim04", "kodim05", "kodim06", "kodim07", "kodim08", "kodim09", "kodim10", "kodim11", "kodim12", "kodim13", "kodim14", "kodim15", "kodim16", "kodim17", "kodim18", "kodim19", "kodim20", "kodim21", "kodim22", "kodim23", "kodim24"];
 const IMG_EXT = "png";
 const BASE_CROP = 512;
 const GOLDEN_QUESTION_PROBABILITY = 0.1;
@@ -106,7 +106,7 @@ let cropSizeCSS = BASE_CROP;
 let dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
 
 const leftCanvas = document.getElementById('canvas-left');
-const gtCanvas   = document.getElementById('canvas-gt');
+const gtCanvas   = document.getElementById('canvas-gt');
 const lctx = leftCanvas.getContext('2d');
 const gctx = gtCanvas.getContext('2d');
 lctx.imageSmoothingEnabled = false;
@@ -114,199 +114,199 @@ gctx.imageSmoothingEnabled = false;
 
 let fixedCrops = {};
 let current = {
-    imageIndex: 0, imageId: null, crop: null, showing: 'A', pair: null,
-    order: [], pending: [], low: 0, high: 0, mid: 0, candidate: null, next: null,
-    comparisonsDone: 0, shownFirst: 'A',
-    trialStartTime: 0, toggleCount: 0, isGolden: false, correctChoice: null,
-    pendingChoice: null
+    imageIndex: 0, imageId: null, crop: null, showing: 'A', pair: null,
+    order: [], pending: [], low: 0, high: 0, mid: 0, candidate: null, next: null,
+    comparisonsDone: 0, shownFirst: 'A',
+    trialStartTime: 0, toggleCount: 0, isGolden: false, correctChoice: null,
+    pendingChoice: null
 };
 
 const cache = new Map();
 function asset(method, imageId){ return method==='gt' ? `assets/gt/${imageId}.${IMG_EXT}` : `assets/${method}/${imageId}.${IMG_EXT}`; }
 function loadImage(path){
-  if(cache.has(path)) return Promise.resolve(cache.get(path));
-  return new Promise((res,rej)=>{
-    const img = new Image();
-    img.onload = () => { cache.set(path, img); res(img) };
-    img.onerror = (err) => { console.error(`Failed to load image: ${path}`); rej(err); };
-    img.src = path;
-  });
+  if(cache.has(path)) return Promise.resolve(cache.get(path));
+  return new Promise((res,rej)=>{
+    const img = new Image();
+    img.onload = () => { cache.set(path, img); res(img) };
+    img.onerror = (err) => { console.error(`Failed to load image: ${path}`); rej(err); };
+    img.src = path;
+  });
 }
 async function preloadForImage(imageId){
-  const paths = [asset('gt',imageId), ...METHODS.map(m=>asset(m,imageId))];
-  for(const p of paths){ await loadImage(p); }
+  const paths = [asset('gt',imageId), ...METHODS.map(m=>asset(m,imageId))];
+  for(const p of paths){ await loadImage(p); }
 }
 
 function fitCropSize(){
-  const pad = 48; const maxW = Math.max(320, window.innerWidth - pad);
-  const per = Math.floor(maxW/2) - 16;
-  cropSizeCSS = Math.max(256, Math.min(BASE_CROP, per));
-  [leftCanvas, gtCanvas].forEach(cv=>{
-    cv.style.width = cv.style.height = cropSizeCSS + 'px';
-    cv.width  = Math.floor(cropSizeCSS * dpr);
-    cv.height = Math.floor(cropSizeCSS * dpr);
-  });
+  const pad = 48; const maxW = Math.max(320, window.innerWidth - pad);
+  const per = Math.floor(maxW/2) - 16;
+  cropSizeCSS = Math.max(256, Math.min(BASE_CROP, per));
+  [leftCanvas, gtCanvas].forEach(cv=>{
+    cv.style.width = cv.style.height = cropSizeCSS + 'px';
+    cv.width  = Math.floor(cropSizeCSS * dpr);
+    cv.height = Math.floor(cropSizeCSS * dpr);
+  });
 }
 window.addEventListener('resize', fitCropSize); fitCropSize();
 
 function randomCropCoord(img){
-  const size = cropSizeCSS;
-  const W = img.naturalWidth, H = img.naturalHeight;
-  const xMax = Math.max(0, W - size), yMax = Math.max(0, H - size);
-  return { x: xMax>0 ? irand(0,xMax) : 0, y: yMax>0 ? irand(0,yMax) : 0, size };
+  const size = cropSizeCSS;
+  const W = img.naturalWidth, H = img.naturalHeight;
+  const xMax = Math.max(0, W - size), yMax = Math.max(0, H - size);
+  return { x: xMax>0 ? irand(0,xMax) : 0, y: yMax>0 ? irand(0,yMax) : 0, size };
 }
 function drawCrop(ctx, img, crop){
-  const s = crop.size, dw = Math.floor(cropSizeCSS * dpr), dh = Math.floor(cropSizeCSS * dpr);
-  ctx.clearRect(0,0,dw,dh);
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(img, crop.x, crop.y, s, s, 0, 0, dw, dh);
+  const s = crop.size, dw = Math.floor(cropSizeCSS * dpr), dh = Math.floor(cropSizeCSS * dpr);
+  ctx.clearRect(0,0,dw,dh);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(img, crop.x, crop.y, s, s, 0, 0, dw, dh);
 }
 
 const elProgress = document.getElementById('progress');
 const elCropInfo = document.getElementById('cropinfo');
-const elImgMeta  = document.getElementById('imgmeta');
+const elImgMeta  = document.getElementById('imgmeta');
 const elLeftLabel= document.getElementById('left-label');
 function updateHUD(){
-  elProgress.textContent = `Image ${current.imageIndex+1}/${IMAGES.length} · Comparisons: ${current.comparisonsDone}`;
-  elCropInfo.textContent = current.crop ? `  crop=(${current.crop.x},${current.crop.y},${current.crop.size})` : '';
-  elLeftLabel.textContent = current.showing;
+  elProgress.textContent = `Image ${current.imageIndex+1}/${IMAGES.length} · Comparisons: ${current.comparisonsDone}`;
+  elCropInfo.textContent = current.crop ? `  crop=(${current.crop.x},${current.crop.y},${current.crop.size})` : '';
+  elLeftLabel.textContent = current.showing;
 }
 
 function randomizedPair(x,y){
-  const swap = rnd()<0.5;
-  const startWith = rnd()<0.5 ? 'A':'B';
-  return swap ? {A:y, B:x, startWith} : {A:x, B:y, startWith};
+  const swap = rnd()<0.5;
+  const startWith = rnd()<0.5 ? 'A':'B';
+  return swap ? {A:y, B:x, startWith} : {A:x, B:y, startWith};
 }
 
 function startImage(index){
-  btnRandCrop.disabled = false;
-  current.imageIndex = index;
-  current.imageId = IMAGES[index];
-  current.order = [METHODS[0]];
-  current.pending = METHODS.slice(1);
-  const gtImg = cache.get(asset('gt', current.imageId));
-  current.crop = fixedCrops[current.imageId] || randomCropCoord(gtImg);
-  btnNextImage.style.display = 'none';
-  btnPickA.style.display = 'inline-block';
-  btnPickB.style.display = 'inline-block';
-  btnPickSame.style.display = 'inline-block';
-  btnConfirm.style.display = 'inline-block';
-  startInsertion();
+  btnRandCrop.disabled = false;
+  current.imageIndex = index;
+  current.imageId = IMAGES[index];
+  current.order = [METHODS[0]];
+  current.pending = METHODS.slice(1);
+  const gtImg = cache.get(asset('gt', current.imageId));
+  current.crop = fixedCrops[current.imageId] || randomCropCoord(gtImg);
+  btnNextImage.style.display = 'none';
+  btnPickA.style.display = 'inline-block';
+  btnPickB.style.display = 'inline-block';
+  btnPickSame.style.display = 'inline-block';
+  btnConfirm.style.display = 'inline-block';
+  startInsertion();
 }
 
 function startInsertion(){
-    if(current.pending.length===0){ nextImage(); return; }
-  
-    current.trialStartTime = performance.now();
-    current.toggleCount = 0;
-    current.isGolden = false;
-    current.correctChoice = null;
+    if(current.pending.length===0){ nextImage(); return; }
+  
+    current.trialStartTime = performance.now();
+    current.toggleCount = 0;
+    current.isGolden = false;
+    current.correctChoice = null;
 
-    current.next = current.pending.shift();
-    current.low = 0;
-    current.high = current.order.length;
-    current.mid = Math.floor((current.low+current.high)/2);
-    
-    let method1 = current.next;
-    let method2 = current.order[current.mid];
+    current.next = current.pending.shift();
+    current.low = 0;
+    current.high = current.order.length;
+    current.mid = Math.floor((current.low+current.high)/2);
+    
+    let method1 = current.next;
+    let method2 = current.order[current.mid];
 
-    if (rnd() < GOLDEN_QUESTION_PROBABILITY) {
-        current.isGolden = true;
-        const methodsToPickFrom = [...current.order, current.next];
-        method1 = methodsToPickFrom[irand(0, methodsToPickFrom.length - 1)];
-        method2 = 'gt'; 
-    }
+    if (rnd() < GOLDEN_QUESTION_PROBABILITY) {
+        current.isGolden = true;
+        const methodsToPickFrom = [...current.order, current.next];
+        method1 = methodsToPickFrom[irand(0, methodsToPickFrom.length - 1)];
+        method2 = 'gt'; 
+    }
 
-    current.pair = randomizedPair(method1, method2);
-    
-    if (current.isGolden) {
-        if (current.pair.A === 'gt') current.correctChoice = 'A';
-        if (current.pair.B === 'gt') current.correctChoice = 'B';
-    }
+    current.pair = randomizedPair(method1, method2);
+    
+    if (current.isGolden) {
+        if (current.pair.A === 'gt') current.correctChoice = 'A';
+        if (current.pair.B === 'gt') current.correctChoice = 'B';
+    }
 
-    current.showing = current.pair.startWith;
-    current.shownFirst = current.pair.startWith;
-    redraw();
+    current.showing = current.pair.startWith;
+    current.shownFirst = current.pair.startWith;
+    redraw();
 }
 
 function handleDecision(pick){
-  // NEW: Logic to calculate modelProbability based on your rules
-  let modelProb = ''; 
-  if (current.isGolden) {
-      modelProb = (pick === current.correctChoice) ? 1 : 0;
-  }
+  // NEW: Logic to calculate modelProbability based on your rules
+  let modelProb = ''; 
+  if (current.isGolden) {
+      modelProb = (pick === current.correctChoice) ? 1 : 0;
+  }
 
-  // Data object matches the 'answers.csv' format
-  jsPsych.data.push({
-    methodA: current.pair.A,
-    methodB: current.pair.B,
-    isGolden: current.isGolden ? 1 : 0,
-    originalName: current.imageId,
-    answerValue: pick,
-    answerer: PARTICIPANT,
-    wasDiscarded: 0,
-    modelProbability: modelProb, // Use the calculated value
-    answeredAt: Date.now(),
-    crop: `(${current.crop.x}, ${current.crop.y}, ${current.crop.size})`
-  });
-  
-  if (current.isGolden) {
-      startInsertion();
-      return;
-  }
+  // Data object matches the 'answers.csv' format
+  jsPsych.data.push({
+    methodA: current.pair.A,
+    methodB: current.pair.B,
+    isGolden: current.isGolden ? 1 : 0,
+    originalName: current.imageId,
+    answerValue: pick,
+    answerer: PARTICIPANT,
+    wasDiscarded: 0,
+    modelProbability: modelProb, // Use the calculated value
+    answeredAt: Date.now(),
+    crop: `(${current.crop.x}, ${current.crop.y}, ${current.crop.size})`
+  });
+  
+  if (current.isGolden) {
+      startInsertion();
+      return;
+  }
 
-  if(pick==='A'){ current.high = current.mid; } 
-  else if(pick==='B') { current.low = current.mid + 1; }
-  
-  current.comparisonsDone++;
-  if(current.low >= current.high){
-    current.order.splice(current.low, 0, current.next);
-    startInsertion();
-    return;
-  }
-  
-  current.trialStartTime = performance.now();
-  current.toggleCount = 0;
-  current.isGolden = false;
-  current.correctChoice = null;
+  if(pick==='A'){ current.high = current.mid; } 
+  else if(pick==='B') { current.low = current.mid + 1; }
+  
+  current.comparisonsDone++;
+  if(current.low >= current.high){
+    current.order.splice(current.low, 0, current.next);
+    startInsertion();
+    return;
+  }
+  
+  current.trialStartTime = performance.now();
+  current.toggleCount = 0;
+  current.isGolden = false;
+  current.correctChoice = null;
 
-  current.mid = Math.floor((current.low+current.high)/2);
-  let method1 = current.next;
-  let method2 = current.order[current.mid];
-  current.pair = randomizedPair(method1, method2);
-  current.showing = current.pair.startWith;
-  current.shownFirst = current.pair.startWith;
-  redraw();
+  current.mid = Math.floor((current.low+current.high)/2);
+  let method1 = current.next;
+  let method2 = current.order[current.mid];
+  current.pair = randomizedPair(method1, method2);
+  current.showing = current.pair.startWith;
+  current.shownFirst = current.pair.startWith;
+  redraw();
 }
 
 function nextImage(){
-  if(!fixedCrops[current.imageId]) fixedCrops[current.imageId] = {...current.crop};
+  if(!fixedCrops[current.imageId]) fixedCrops[current.imageId] = {...current.crop};
 
-  if(current.imageIndex + 1 < IMAGES.length){
-    btnPickA.style.display = 'none';
-    btnPickB.style.display = 'none';
-    btnPickSame.style.display = 'none';
-    btnConfirm.style.display = 'none';
-    btnNextImage.style.display = 'inline-block';
-  }else{
-    finish();
-  }
+  if(current.imageIndex + 1 < IMAGES.length){
+    btnPickA.style.display = 'none';
+    btnPickB.style.display = 'none';
+    btnPickSame.style.display = 'none';
+    btnConfirm.style.display = 'none';
+    btnNextImage.style.display = 'inline-block';
+  }else{
+    finish();
+  }
 }
 
 function redraw(){
-  btnPickA.disabled = false;
-  btnPickB.disabled = false;
-  btnPickSame.disabled = false;
-  btnConfirm.disabled = true;
-  [btnPickA, btnPickB, btnPickSame].forEach(btn => btn.classList.remove('selected'));
-  current.pendingChoice = null;
-  updateHUD();
-  const {imageId, crop, showing, pair} = current;
-  const leftKey = (showing==='A') ? pair.A : pair.B;
-  const leftImg = cache.get(asset(leftKey, imageId));
-  const gtImg   = cache.get(asset('gt', imageId));
-  drawCrop(lctx, leftImg, crop);
-  drawCrop(gctx, gtImg, crop);
+  btnPickA.disabled = false;
+  btnPickB.disabled = false;
+  btnPickSame.disabled = false;
+  btnConfirm.disabled = true;
+  [btnPickA, btnPickB, btnPickSame].forEach(btn => btn.classList.remove('selected'));
+  current.pendingChoice = null;
+  updateHUD();
+  const {imageId, crop, showing, pair} = current;
+  const leftKey = (showing==='A') ? pair.A : pair.B;
+  const leftImg = cache.get(asset(leftKey, imageId));
+  const gtImg   = cache.get(asset('gt', imageId));
+  drawCrop(lctx, leftImg, crop);
+  drawCrop(gctx, gtImg, crop);
 }
 
 const btnStart = document.getElementById('btn-start');
@@ -319,38 +319,38 @@ const btnRandCrop = document.getElementById('btn-rand-crop');
 const btnLockCrop = document.getElementById('btn-lock-crop');
 const elSetup = document.getElementById('setup');
 const elTrial = document.getElementById('trial');
-const elDone  = document.getElementById('done');
+const elDone  = document.getElementById('done');
 const elStatus= document.getElementById('status');
 const btnNextImage = document.getElementById('btn-next-image');
 const btnPickSame = document.getElementById('btn-pick-same');
 const btnConfirm = document.getElementById('btn-confirm');
 
 btnStart.addEventListener('click', async ()=>{
-  elStatus.textContent = 'Preloading...';
-  try {
-    await preloadForImage(IMAGES[0]);
-    elSetup.style.display = 'none';
-    elTrial.style.display = 'block';
-    startImage(0);
-  } catch (error) {
-    elStatus.textContent = 'Error: Could not load images. Please check the assets folder and the browser console.';
-    console.error("Preloading failed:", error);
-  }
+  elStatus.textContent = 'Preloading...';
+  try {
+    await preloadForImage(IMAGES[0]);
+    elSetup.style.display = 'none';
+    elTrial.style.display = 'block';
+    startImage(0);
+  } catch (error) {
+    elStatus.textContent = 'Error: Could not load images. Please check the assets folder and the browser console.';
+    console.error("Preloading failed:", error);
+  }
 });
 
 btnToggle.addEventListener('click', ()=>{
-  current.toggleCount++; 
-  current.showing = (current.showing==='A') ? 'B' : 'A';
-  // redraw(); This is not needed as makePendingChoice will not be called
+  current.toggleCount++; 
+  current.showing = (current.showing==='A') ? 'B' : 'A';
+  redraw(); // <-- THIS IS THE FIX
 });
 
 function makePendingChoice(choice) {
-    current.pendingChoice = choice;
-    [btnPickA, btnPickB, btnPickSame].forEach(btn => btn.classList.remove('selected'));
-    if (choice === 'A') btnPickA.classList.add('selected');
-    if (choice === 'B') btnPickB.classList.add('selected');
-    if (choice === 'draw') btnPickSame.classList.add('selected');
-    btnConfirm.disabled = false;
+    current.pendingChoice = choice;
+    [btnPickA, btnPickB, btnPickSame].forEach(btn => btn.classList.remove('selected'));
+    if (choice === 'A') btnPickA.classList.add('selected');
+    if (choice === 'B') btnPickB.classList.add('selected');
+    if (choice === 'draw') btnPickSame.classList.add('selected');
+    btnConfirm.disabled = false;
 }
 
 btnPickA.addEventListener('click', ()=>{ makePendingChoice('A'); });
@@ -358,71 +358,71 @@ btnPickB.addEventListener('click', ()=>{ makePendingChoice('B'); });
 btnPickSame.addEventListener('click', ()=>{ makePendingChoice('draw'); });
 
 btnConfirm.addEventListener('click', () => {
-    if (current.pendingChoice) {
-        handleDecision(current.pendingChoice);
-    }
+    if (current.pendingChoice) {
+        handleDecision(current.pendingChoice);
+    }
 });
 
 btnRandCrop.addEventListener('click', ()=>{
-  if(fixedCrops[current.imageId]) return;
-  const gtImg = cache.get(asset('gt', current.imageId));
-  current.crop = randomCropCoord(gtImg);
-  redraw();
+  if(fixedCrops[current.imageId]) return;
+  const gtImg = cache.get(asset('gt', current.imageId));
+  current.crop = randomCropCoord(gtImg);
+  redraw();
 });
 btnLockCrop.addEventListener('click', ()=>{
-  fixedCrops[current.imageId] = {...current.crop};
-  btnRandCrop.disabled = true;
+  fixedCrops[current.imageId] = {...current.crop};
+  btnRandCrop.disabled = true;
 });
 
 btnNextImage.addEventListener('click', async () => {
-  const nextImageIndex = current.imageIndex + 1;
-  elStatus.textContent = 'Preloading...';
-  try {
-    btnPickA.style.display = 'inline-block';
-    btnPickB.style.display = 'inline-block';
-    btnPickSame.style.display = 'inline-block';
-    btnConfirm.style.display = 'inline-block';
-    await preloadForImage(IMAGES[nextImageIndex]);
-    elStatus.textContent = ''; 
-    startImage(nextImageIndex);
-  } catch (error) {
-     elStatus.textContent = `Error: Could not load ${IMAGES[nextImageIndex]}. Please check the assets folder.`;
-     console.error("Preloading failed:", error);
-  }
+  const nextImageIndex = current.imageIndex + 1;
+  elStatus.textContent = 'Preloading...';
+  try {
+    btnPickA.style.display = 'inline-block';
+    btnPickB.style.display = 'inline-block';
+    btnPickSame.style.display = 'inline-block';
+    btnConfirm.style.display = 'inline-block';
+    await preloadForImage(IMAGES[nextImageIndex]);
+    elStatus.textContent = ''; 
+    startImage(nextImageIndex);
+  } catch (error) {
+     elStatus.textContent = `Error: Could not load ${IMAGES[nextImageIndex]}. Please check the assets folder.`;
+     console.error("Preloading failed:", error);
+  }
 });
 
 window.addEventListener('keydown', (e)=>{
-  if(elTrial.style.display==='none') return;
-  if(e.key===' '){ e.preventDefault(); btnToggle.click(); }
-  if(btnPickA.style.display !== 'none' && (e.key==='f' || e.key==='F')){ btnPickA.click(); }
-  if(btnPickB.style.display !== 'none' && (e.key==='j' || e.key==='J')){ btnPickB.click(); }
-  if(btnPickSame.style.display !== 'none' && (e.key==='s' || e.key==='S')){ btnPickSame.click(); }
-  if(!btnRandCrop.disabled && (e.key==='r' || e.key==='R')){ btnRandCrop.click(); }
-  if(e.key==='Enter'){ 
-      if(!btnConfirm.disabled) {
-          btnConfirm.click();
-      } else {
-          btnLockCrop.click();
-      }
-  }
+  if(elTrial.style.display==='none') return;
+  if(e.key===' '){ e.preventDefault(); btnToggle.click(); }
+  if(btnPickA.style.display !== 'none' && (e.key==='f' || e.key==='F')){ btnPickA.click(); }
+  if(btnPickB.style.display !== 'none' && (e.key==='j' || e.key==='J')){ btnPickB.click(); }
+  if(btnPickSame.style.display !== 'none' && (e.key==='s' || e.key==='S')){ btnPickSame.click(); }
+  if(!btnRandCrop.disabled && (e.key==='r' || e.key==='R')){ btnRandCrop.click(); }
+  if(e.key==='Enter'){ 
+      if(!btnConfirm.disabled) {
+          btnConfirm.click();
+      } else {
+          btnLockCrop.click();
+      }
+  }
 });
 
 function finish(){
-  elTrial.style.display = 'none';
-  elDone.style.display = 'block';
-  elSetup.style.display = 'block'; 
-  btnDownload.disabled = false;
-  btnJSON.disabled = false;
-  const n = jsPsych.data.count();
-  document.getElementById('summary').textContent = `Entries: ${n}\nParticipant: ${PARTICIPANT}\nSeed: ${RNG_SEED}`;
+  elTrial.style.display = 'none';
+  elDone.style.display = 'block';
+  elSetup.style.display = 'block'; 
+  btnDownload.disabled = false;
+  btnJSON.disabled = false;
+  const n = jsPsych.data.count();
+  document.getElementById('summary').textContent = `Entries: ${n}\nParticipant: ${PARTICIPANT}\nSeed: ${RNG_SEED}`;
 }
 
 function download(filename, text, mime){
-  const blob = new Blob([text], {type: mime});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = filename;
-  a.click();
+  const blob = new Blob([text], {type: mime});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
 }
 
 btnDownload.addEventListener('click', ()=>{ const csv = jsPsych.data.csv(); download(`results_${PARTICIPANT}.csv`, csv, 'text/csv;charset=utf-8;'); });
