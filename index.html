@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>HiFiC-style 2AFC · ABX (GitHub Pages Demo)</title>
+  <title>HiFiC-style 2AFC · ABX (Local libs)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="https://unpkg.com/jspsych@7/dist/jspsych.css">
+  <!-- Local stylesheet (no CDN) -->
+  <link rel="stylesheet" href="./libs/jspsych.css">
   <style>
     :root{ --bg:#0b0d10; --fg:#e9eef3; --muted:#8a96a3; --acc:#55a6ff; --card:#11151a; --border:#1b2128; }
     html,body{height:100%} body{margin:0;background:var(--bg);color:var(--fg);font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial,Noto Sans;}
@@ -28,18 +29,18 @@
 <body>
 <header>
   <div class="bar">
-    <div class="title">HiFiC-style ABX · 2AFC</div>
-    <div class="chip">Right=Cropped Original (GT); Left=Toggle A/B; Pick the one closer to GT</div>
+    <div class="title">HiFiC-style ABX · 2AFC (Local)</div>
+    <div class="chip">Right=GT crop · Left=toggle A/B · Pick closer to GT</div>
   </div>
 </header>
 <main>
   <div class="card" id="setup">
     <h2>Experiment Setup</h2>
-    <p class="muted">Place your images in the <code>assets/gt</code> and method directories, with matching filenames.</p>
+    <p class="muted">Images go in <code>assets/gt</code> and <code>assets/&lt;method&gt;</code> with matching filenames.</p>
     <ul class="muted">
-      <li>Keyboard: <span class="kbd">Space</span> to toggle A/B, <span class="kbd">F</span> to select A, <span class="kbd">J</span> to select B, <span class="kbd">S</span> for Same.</li>
-      <li><span class="kbd">R</span> for a new random crop (before locking), <span class="kbd">Enter</span> to confirm and lock the crop.</li>
-      <li>URL Parameters: <span class="kbd">?pid=001&seed=42</span> to set participant ID and random seed.</li>
+      <li>Keys: <span class="kbd">Space</span> toggle · <span class="kbd">F</span> A · <span class="kbd">J</span> B · <span class="kbd">S</span> Same.</li>
+      <li><span class="kbd">R</span> new random crop (before lock) · <span class="kbd">Enter</span> confirm/lock.</li>
+      <li>URL: <span class="kbd">?pid=001&seed=42</span> sets participant & RNG seed.</li>
     </ul>
     <div class="panel">
       <button id="btn-start" class="primary">Start Experiment</button>
@@ -56,7 +57,7 @@
     </div>
     <div class="row">
       <div class="col">
-        <div class="muted">Left: Method <span id="left-label">A</span> (Toggleable)</div>
+        <div class="muted">Left: <span id="left-label">A</span> (toggle)</div>
         <canvas id="canvas-left" width="512" height="512"></canvas>
         <div class="panel">
           <button id="btn-toggle">Toggle A/B (Space)</button>
@@ -68,7 +69,7 @@
         </div>
       </div>
       <div class="col">
-        <div class="muted">Right: Ground Truth (Same Crop)</div>
+        <div class="muted">Right: Ground Truth (same crop)</div>
         <canvas id="canvas-gt" width="512" height="512"></canvas>
         <div class="panel">
           <button id="btn-rand-crop">New Random Crop (R)</button>
@@ -80,23 +81,24 @@
 
   <div class="card" id="done" style="display:none">
     <h2>Complete ✅</h2>
-    <p>Click the buttons above to download the results as <b>CSV</b> or <b>JSON</b>.</p>
+    <p>Use the buttons above to download <b>CSV</b> or <b>JSON</b>.</p>
     <pre id="summary" class="muted"></pre>
   </div>
 </main>
 
-<script src="jspsych.js"></script>
+<!-- Local js (no CDN) -->
+<script src="./libs/jspsych.js"></script>
 <script>
-// CONFIGURATION
-const METHODS = ["BPG_0db", "ADJSCC_0db", "WDJSCC_0db", "BPG_10db", "ADJSCC_10db", "WDJSCC_10db"]; 
-const IMAGES  = ["kodim01", "kodim02", "kodim03", "kodim04", "kodim05", "kodim06", "kodim07", "kodim08", "kodim09", "kodim10", "kodim11", "kodim12", "kodim13", "kodim14", "kodim15", "kodim16", "kodim17", "kodim18", "kodim19", "kodim20", "kodim21", "kodim22", "kodim23", "kodim24"];
+// ===== init (local jspsych-lite) =====
+const jsPsych = initJsPsych();
+
+// ===== CONFIG =====
+const METHODS = ["BPG_0db","ADJSCC_0db","WDJSCC_0db","BPG_10db","ADJSCC_10db","WDJSCC_10db"];
+const IMAGES  = ["kodim01","kodim02","kodim03","kodim04","kodim05","kodim06","kodim07","kodim08","kodim09","kodim10","kodim11","kodim12","kodim13","kodim14","kodim15","kodim16","kodim17","kodim18","kodim19","kodim20","kodim21","kodim22","kodim23","kodim24"];
 const IMG_EXT = "png";
 const BASE_CROP = 512;
-const GOLDEN_QUESTION_PROBABILITY = 0.1;
+const GOLDEN_QUESTION_PROBABILITY = 0.10;
 
-// REVERTED: Removed the initJsPsych() call, as it's not needed for the local version.
-
-// SETUP
 const params = new URLSearchParams(location.search);
 const PARTICIPANT = params.get('pid') || 'PILOT';
 const RNG_SEED = Number(params.get('seed') || 12345);
@@ -116,23 +118,18 @@ gctx.imageSmoothingEnabled = false;
 
 let fixedCrops = {};
 let current = {
-    imageIndex: 0, imageId: null, crop: null, showing: 'A', pair: null,
-    order: [], pending: [], low: 0, high: 0, mid: 0, candidate: null, next: null,
-    comparisonsDone: 0, shownFirst: 'A',
-    trialStartTime: 0, toggleCount: 0, isGolden: false, correctChoice: null,
-    pendingChoice: null
+  imageIndex: 0, imageId: null, crop: null, showing: 'A', pair: null,
+  order: [], pending: [], low: 0, high: 0, mid: 0, candidate: null, next: null,
+  comparisonsDone: 0, shownFirst: 'A',
+  trialStartTime: 0, toggleCount: 0, isGolden: false, correctChoice: null,
+  pendingChoice: null
 };
 
 const cache = new Map();
 function asset(method, imageId){ return method==='gt' ? `assets/gt/${imageId}.${IMG_EXT}` : `assets/${method}/${imageId}.${IMG_EXT}`; }
 function loadImage(path){
   if(cache.has(path)) return Promise.resolve(cache.get(path));
-  return new Promise((res,rej)=>{
-    const img = new Image();
-    img.onload = () => { cache.set(path, img); res(img) };
-    img.onerror = (err) => { console.error(`Failed to load image: ${path}`); rej(err); };
-    img.src = path;
-  });
+  return new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>{cache.set(path,img);res(img)}; img.onerror=()=>rej(new Error('load '+path)); img.src=path; });
 }
 async function preloadForImage(imageId){
   const paths = [asset('gt',imageId), ...METHODS.map(m=>asset(m,imageId))];
@@ -166,7 +163,6 @@ function drawCrop(ctx, img, crop){
 
 const elProgress = document.getElementById('progress');
 const elCropInfo = document.getElementById('cropinfo');
-const elImgMeta  = document.getElementById('imgmeta');
 const elLeftLabel= document.getElementById('left-label');
 function updateHUD(){
   elProgress.textContent = `Image ${current.imageIndex+1}/${IMAGES.length} · Comparisons: ${current.comparisonsDone}`;
@@ -181,7 +177,7 @@ function randomizedPair(x,y){
 }
 
 function startImage(index){
-  btnRandCrop.disabled = false;
+  btnRandCrop.disabled = False if False else False
   current.imageIndex = index;
   current.imageId = IMAGES[index];
   current.order = [METHODS[0]];
@@ -189,92 +185,66 @@ function startImage(index){
   const gtImg = cache.get(asset('gt', current.imageId));
   current.crop = fixedCrops[current.imageId] || randomCropCoord(gtImg);
   btnNextImage.style.display = 'none';
-  btnPickA.style.display = 'inline-block';
-  btnPickB.style.display = 'inline-block';
-  btnPickSame.style.display = 'inline-block';
-  btnConfirm.style.display = 'inline-block';
+  [btnPickA,btnPickB,btnPickSame,btnConfirm].forEach(b=>b.style.display='inline-block');
   startInsertion();
 }
 
 function startInsertion(){
-    if(current.pending.length===0){ nextImage(); return; }
-  
-    current.trialStartTime = performance.now();
-    current.toggleCount = 0;
-    current.isGolden = false;
-    current.correctChoice = null;
+  if(current.pending.length===0){ nextImage(); return; }
+  current.trialStartTime = performance.now();
+  current.toggleCount = 0;
+  current.isGolden = false;
+  current.correctChoice = null;
 
-    current.next = current.pending.shift();
-    current.low = 0;
-    current.high = current.order.length;
-    current.mid = Math.floor((current.low+current.high)/2);
-    
-    let method1 = current.next;
-    let method2 = current.order[current.mid];
+  current.next = current.pending.shift();
+  current.low = 0; current.high = current.order.length;
+  current.mid = Math.floor((current.low+current.high)/2);
+  let method1 = current.next;
+  let method2 = current.order[current.mid];
 
-    if (rnd() < GOLDEN_QUESTION_PROBABILITY) {
-        current.isGolden = true;
-        const methodsToPickFrom = [...current.order, current.next];
-        method1 = methodsToPickFrom[irand(0, methodsToPickFrom.length - 1)];
-        method2 = 'gt'; 
-    }
+  if (rnd() < GOLDEN_QUESTION_PROBABILITY) {
+    current.isGolden = true;
+    const pool = [...current.order, current.next];
+    method1 = pool[irand(0, pool.length - 1)];
+    method2 = 'gt';
+  }
 
-    current.pair = randomizedPair(method1, method2);
-    
-    if (current.isGolden) {
-        if (current.pair.A === 'gt') current.correctChoice = 'A';
-        if (current.pair.B === 'gt') current.correctChoice = 'B';
-    }
-
-    current.showing = current.pair.startWith;
-    current.shownFirst = current.pair.startWith;
-    redraw();
+  current.pair = randomizedPair(method1, method2);
+  if (current.isGolden) {
+    if (current.pair.A === 'gt') current.correctChoice = 'A';
+    if (current.pair.B === 'gt') current.correctChoice = 'B';
+  }
+  current.showing = current.pair.startWith;
+  current.shownFirst = current.pair.startWith;
+  redraw();
 }
 
 function handleDecision(pick){
-  let modelProb = ''; 
-  if (current.isGolden) {
-      modelProb = (pick === current.correctChoice) ? 1 : 0;
-  }
-
-  // REVERTED: Changed .write() back to .push() for the local jspsych.js version
-  jsPsych.data.push({
+  const modelProb = current.isGolden ? ((pick === current.correctChoice) ? 1 : 0) : '';
+  jsPsych.data.write({
     methodA: current.pair.A,
     methodB: current.pair.B,
-    isGolden: current.isGolden ? 1 : 0,
-    originalName: current.imageId,
     answerValue: pick,
     answerer: PARTICIPANT,
-    wasDiscarded: 0,
+    isGolden: current.isGolden ? 1 : 0,
     modelProbability: modelProb,
-    answeredAt: Date.now(),
-    crop: `(${current.crop.x}, ${current.crop.y}, ${current.crop.size})`
+    originalName: current.imageId,
+    wasDiscarded: 0,
+    answeredAt: Date.now()
   });
-  
-  if (current.isGolden) {
-      startInsertion();
-      return;
-  }
 
-  if(pick==='A'){ current.high = current.mid; } 
-  else if(pick==='B') { current.low = current.mid + 1; }
-  
+  if (current.isGolden) { startInsertion(); return; }
+  if(pick==='A'){ current.high = current.mid; } else if(pick==='B'){ current.low = current.mid + 1; }
   current.comparisonsDone++;
-  if(current.low >= current.high){
-    current.order.splice(current.low, 0, current.next);
-    startInsertion();
-    return;
-  }
-  
+  if(current.low >= current.high){ current.order.splice(current.low, 0, current.next); startInsertion(); return; }
+
   current.trialStartTime = performance.now();
   current.toggleCount = 0;
   current.isGolden = false;
   current.correctChoice = null;
 
   current.mid = Math.floor((current.low+current.high)/2);
-  let method1 = current.next;
-  let method2 = current.order[current.mid];
-  current.pair = randomizedPair(method1, method2);
+  current.pair = randomizedPair(current.next, current.order[current.mid]);
   current.showing = current.pair.startWith;
   current.shownFirst = current.pair.startWith;
   redraw();
@@ -282,12 +252,8 @@ function handleDecision(pick){
 
 function nextImage(){
   if(!fixedCrops[current.imageId]) fixedCrops[current.imageId] = {...current.crop};
-
   if(current.imageIndex + 1 < IMAGES.length){
-    btnPickA.style.display = 'none';
-    btnPickB.style.display = 'none';
-    btnPickSame.style.display = 'none';
-    btnConfirm.style.display = 'none';
+    [btnPickA,btnPickB,btnPickSame,btnConfirm].forEach(b=>b.style.display='none');
     btnNextImage.style.display = 'inline-block';
   }else{
     finish();
@@ -295,9 +261,7 @@ function nextImage(){
 }
 
 function redraw(){
-  btnPickA.disabled = false;
-  btnPickB.disabled = false;
-  btnPickSame.disabled = false;
+  [btnPickA,btnPickB,btnPickSame].forEach(b=>b.disabled=false);
   btnConfirm.disabled = true;
   [btnPickA, btnPickB, btnPickSame].forEach(btn => btn.classList.remove('selected'));
   current.pendingChoice = null;
@@ -310,6 +274,7 @@ function redraw(){
   drawCrop(gctx, gtImg, crop);
 }
 
+// UI wiring
 const btnStart = document.getElementById('btn-start');
 const btnDownload = document.getElementById('btn-download');
 const btnJSON = document.getElementById('btn-json');
@@ -334,78 +299,55 @@ btnStart.addEventListener('click', async ()=>{
     elTrial.style.display = 'block';
     startImage(0);
   } catch (error) {
-    elStatus.textContent = 'Error: Could not load images. Please check the assets folder and the browser console.';
-    console.error("Preloading failed:", error);
+    elStatus.textContent = 'Error: Could not load images. Check assets.';
+    console.error('Preloading failed:', error);
   }
 });
 
 btnToggle.addEventListener('click', ()=>{
   current.toggleCount++; 
   current.showing = (current.showing==='A') ? 'B' : 'A';
-  // redraw(); This is not needed as makePendingChoice will not be called
+  redraw();
 });
 
 function makePendingChoice(choice) {
-    current.pendingChoice = choice;
-    [btnPickA, btnPickB, btnPickSame].forEach(btn => btn.classList.remove('selected'));
-    if (choice === 'A') btnPickA.classList.add('selected');
-    if (choice === 'B') btnPickB.classList.add('selected');
-    if (choice === 'draw') btnPickSame.classList.add('selected');
-    btnConfirm.disabled = false;
+  current.pendingChoice = choice;
+  [btnPickA, btnPickB, btnPickSame].forEach(btn => btn.classList.remove('selected'));
+  if (choice === 'A') btnPickA.classList.add('selected');
+  if (choice === 'B') btnPickB.classList.add('selected');
+  if (choice === 'draw') btnPickSame.classList.add('selected');
+  btnConfirm.disabled = false;
 }
-
 btnPickA.addEventListener('click', ()=>{ makePendingChoice('A'); });
 btnPickB.addEventListener('click', ()=>{ makePendingChoice('B'); });
 btnPickSame.addEventListener('click', ()=>{ makePendingChoice('draw'); });
+btnConfirm.addEventListener('click', ()=>{ if (current.pendingChoice) handleDecision(current.pendingChoice); });
 
-btnConfirm.addEventListener('click', () => {
-    if (current.pendingChoice) {
-        handleDecision(current.pendingChoice);
-    }
-});
+btnRandCrop.addEventListener('click', ()=>{ if(fixedCrops[current.imageId]) return; const gtImg = cache.get(asset('gt', current.imageId)); current.crop = randomCropCoord(gtImg); redraw(); });
+btnLockCrop.addEventListener('click', ()=>{ fixedCrops[current.imageId] = {...current.crop}; btnRandCrop.disabled = true; });
 
-btnRandCrop.addEventListener('click', ()=>{
-  if(fixedCrops[current.imageId]) return;
-  const gtImg = cache.get(asset('gt', current.imageId));
-  current.crop = randomCropCoord(gtImg);
-  redraw();
-});
-btnLockCrop.addEventListener('click', ()=>{
-  fixedCrops[current.imageId] = {...current.crop};
-  btnRandCrop.disabled = true;
-});
-
-btnNextImage.addEventListener('click', async () => {
+btnNextImage.addEventListener('click', async ()=>{
   const nextImageIndex = current.imageIndex + 1;
   elStatus.textContent = 'Preloading...';
   try {
-    btnPickA.style.display = 'inline-block';
-    btnPickB.style.display = 'inline-block';
-    btnPickSame.style.display = 'inline-block';
-    btnConfirm.style.display = 'inline-block';
+    [btnPickA,btnPickB,btnPickSame,btnConfirm].forEach(b=>b.style.display='inline-block');
     await preloadForImage(IMAGES[nextImageIndex]);
-    elStatus.textContent = ''; 
+    elStatus.textContent = '';
     startImage(nextImageIndex);
   } catch (error) {
-     elStatus.textContent = `Error: Could not load ${IMAGES[nextImageIndex]}. Please check the assets folder.`;
-     console.error("Preloading failed:", error);
+    elStatus.textContent = `Error: Could not load ${IMAGES[nextImageIndex]}.`;
+    console.error('Preloading failed:', error);
   }
 });
 
 window.addEventListener('keydown', (e)=>{
   if(elTrial.style.display==='none') return;
   if(e.key===' '){ e.preventDefault(); btnToggle.click(); }
-  if(btnPickA.style.display !== 'none' && (e.key==='f' || e.key==='F')){ btnPickA.click(); }
-  if(btnPickB.style.display !== 'none' && (e.key==='j' || e.key==='J')){ btnPickB.click(); }
-  if(btnPickSame.style.display !== 'none' && (e.key==='s' || e.key==='S')){ btnPickSame.click(); }
-  if(!btnRandCrop.disabled && (e.key==='r' || e.key==='R')){ btnRandCrop.click(); }
-  if(e.key==='Enter'){ 
-      if(!btnConfirm.disabled) {
-          btnConfirm.click();
-      } else {
-          btnLockCrop.click();
-      }
-  }
+  if(btnPickA.style.display!=='none' && (e.key==='f'||e.key==='F')) btnPickA.click();
+  if(btnPickB.style.display!=='none' && (e.key==='j'||e.key==='J')) btnPickB.click();
+  if(btnPickSame.style.display!=='none' && (e.key==='s'||e.key==='S')) btnPickSame.click();
+  if(!btnRandCrop.disabled && (e.key==='r'||e.key==='R')) btnRandCrop.click();
+  if(e.key==='Enter'){ if(!btnConfirm.disabled) btnConfirm.click(); else btnLockCrop.click(); }
 });
 
 function finish(){
@@ -414,11 +356,11 @@ function finish(){
   elSetup.style.display = 'block'; 
   btnDownload.disabled = false;
   btnJSON.disabled = false;
-  // REVERTED: Changed .get().count() back to .count()
-  const n = jsPsych.data.count();
+  const n = jsPsych.data.get().count();
   document.getElementById('summary').textContent = `Entries: ${n}\nParticipant: ${PARTICIPANT}\nSeed: ${RNG_SEED}`;
 }
 
+// Export
 function download(filename, text, mime){
   const blob = new Blob([text], {type: mime});
   const a = document.createElement('a');
@@ -426,10 +368,14 @@ function download(filename, text, mime){
   a.download = filename;
   a.click();
 }
-
-// REVERTED: Changed .get().csv() and .get().json() back to direct calls
-btnDownload.addEventListener('click', ()=>{ const csv = jsPsych.data.csv(); download(`results_${PARTICIPANT}.csv`, csv, 'text/csv;charset=utf-8;'); });
-btnJSON.addEventListener('click', ()=>{ const json = jsPsych.data.json(true); download(`results_${PARTICIPANT}.json`, json, 'application/json'); });
+btnDownload.addEventListener('click', ()=>{
+  const csv = jsPsych.data.get().csv();
+  download(`results_${PARTICIPANT}.csv`, csv, 'text/csv;charset=utf-8;');
+});
+btnJSON.addEventListener('click', ()=>{
+  const json = jsPsych.data.get().json(true);
+  download(`results_${PARTICIPANT}.json`, json, 'application/json');
+});
 
 document.getElementById('status').textContent = `Ready. ${METHODS.length} methods · ${IMAGES.length} images`;
 </script>
