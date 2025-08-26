@@ -22,6 +22,8 @@
     button:disabled{opacity:.55;cursor:not-allowed} .muted{color:var(--muted)} .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0c1218;border:1px solid var(--border);border-radius:6px;padding:2px 6px}
     .footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
     a{color:var(--acc);text-decoration:none}
+    /* NEW: Style for the selected button */
+    button.selected { border-color: var(--fg); box-shadow: 0 0 8px var(--acc); }
   </style>
 </head>
 <body>
@@ -36,7 +38,7 @@
     <h2>Experiment Setup</h2>
     <p class="muted">Place your images in the <code>assets/gt</code> and method directories, with matching filenames.</p>
     <ul class="muted">
-      <li>Keyboard: <span class="kbd">Space</span> to toggle A/B, <span class="kbd">F</span> to select A, <span class="kbd">J</span> to select B.</li>
+      <li>Keyboard: <span class="kbd">Space</span> to toggle A/B, <span class="kbd">F</span> to select A, <span class="kbd">J</span> to select B, <span class="kbd">S</span> for Same.</li>
       <li><span class="kbd">R</span> for a new random crop (before locking), <span class="kbd">Enter</span> to confirm and lock the crop.</li>
       <li>URL Parameters: <span class="kbd">?pid=001&seed=42</span> to set participant ID and random seed.</li>
     </ul>
@@ -61,6 +63,8 @@
           <button id="btn-toggle">Toggle A/B (Space)</button>
           <button id="btn-pick-a" class="primary">Select A (F)</button>
           <button id="btn-pick-b" class="primary">Select B (J)</button>
+          <button id="btn-pick-same" class="primary">Same (S)</button>
+          <button id="btn-confirm" class="primary" disabled>Confirm</button>
           <button id="btn-next-image" class="primary" style="display:none;">Next Image</button>
         </div>
       </div>
@@ -85,7 +89,6 @@
 <script src="jspsych.js"></script>
 <script>
 // CONFIGURATION
-// MODIFICATION: Added 3 new methods for a total of 6
 const METHODS = ["BPG_0db", "ADJSCC_0db", "WDJSCC_0db", "BPG_10db", "ADJSCC_10db", "WDJSCC_10db"]; 
 const IMAGES  = ["kodim01", "kodim02", "kodim03", "kodim04", "kodim05", "kodim06", "kodim07", "kodim08", "kodim09", "kodim10", "kodim11", "kodim12", "kodim13", "kodim14", "kodim15", "kodim16", "kodim17", "kodim18", "kodim19", "kodim20", "kodim21", "kodim22", "kodim23", "kodim24"];
 const IMG_EXT = "png";
@@ -115,7 +118,8 @@ let current = {
     imageIndex: 0, imageId: null, crop: null, showing: 'A', pair: null,
     order: [], pending: [], low: 0, high: 0, mid: 0, candidate: null, next: null,
     comparisonsDone: 0, shownFirst: 'A',
-    trialStartTime: 0, toggleCount: 0, isGolden: false, correctChoice: null
+    trialStartTime: 0, toggleCount: 0, isGolden: false, correctChoice: null,
+    pendingChoice: null // NEW: To hold the choice before confirming
 };
 
 const cache = new Map();
@@ -166,8 +170,6 @@ const elLeftLabel= document.getElementById('left-label');
 function updateHUD(){
   elProgress.textContent = `Image ${current.imageIndex+1}/${IMAGES.length} · Comparisons: ${current.comparisonsDone}`;
   elCropInfo.textContent = current.crop ? `  crop=(${current.crop.x},${current.crop.y},${current.crop.size})` : '';
-  // MODIFICATION: Commented out the line below to hide A/B method names from the UI
-  // elImgMeta.textContent = current.pair ? `A=${current.pair.A} · B=${current.pair.B} · Showing: ${current.showing}` : '';
   elLeftLabel.textContent = current.showing;
 }
 
@@ -188,6 +190,7 @@ function startImage(index){
   btnNextImage.style.display = 'none';
   btnPickA.style.display = 'inline-block';
   btnPickB.style.display = 'inline-block';
+  btnPickSame.style.display = 'inline-block';
   startInsertion();
 }
 
@@ -198,6 +201,7 @@ function startInsertion(){
     current.toggleCount = 0;
     current.isGolden = false;
     current.correctChoice = null;
+    current.pendingChoice = null;
 
     current.next = current.pending.shift();
     current.low = 0;
@@ -227,10 +231,7 @@ function startInsertion(){
 }
 
 function handleDecision(pick){
-  btnPickA.disabled = true;
-  btnPickB.disabled = true;
   const decisionTime = performance.now() - current.trialStartTime;
-
   jsPsych.data.push({
     method_A: current.pair.A,
     method_B: current.pair.B,
@@ -254,7 +255,10 @@ function handleDecision(pick){
       return;
   }
 
-  if(pick==='A'){ current.high = current.mid; } else { current.low = current.mid + 1; }
+  if(pick==='A'){ current.high = current.mid; } 
+  else if(pick==='B') { current.low = current.mid + 1; }
+  // If choice is 'draw', low and high don't change, effectively narrowing the search without moving the boundary
+  
   current.comparisonsDone++;
   if(current.low >= current.high){
     current.order.splice(current.low, 0, current.next);
@@ -282,6 +286,8 @@ function nextImage(){
   if(current.imageIndex + 1 < IMAGES.length){
     btnPickA.style.display = 'none';
     btnPickB.style.display = 'none';
+    btnPickSame.style.display = 'none';
+    btnConfirm.style.display = 'none';
     btnNextImage.style.display = 'inline-block';
   }else{
     finish();
@@ -289,8 +295,14 @@ function nextImage(){
 }
 
 function redraw(){
+  // Reset UI state for a new decision
   btnPickA.disabled = false;
   btnPickB.disabled = false;
+  btnPickSame.disabled = false;
+  btnConfirm.disabled = true;
+  [btnPickA, btnPickB, btnPickSame].forEach(btn => btn.classList.remove('selected'));
+  current.pendingChoice = null;
+
   updateHUD();
   const {imageId, crop, showing, pair} = current;
   const leftKey = (showing==='A') ? pair.A : pair.B;
@@ -313,6 +325,9 @@ const elTrial = document.getElementById('trial');
 const elDone  = document.getElementById('done');
 const elStatus= document.getElementById('status');
 const btnNextImage = document.getElementById('btn-next-image');
+// NEW: Get the new buttons
+const btnPickSame = document.getElementById('btn-pick-same');
+const btnConfirm = document.getElementById('btn-confirm');
 
 btnStart.addEventListener('click', async ()=>{
   elStatus.textContent = 'Preloading...';
@@ -332,8 +347,30 @@ btnToggle.addEventListener('click', ()=>{
   current.showing = (current.showing==='A') ? 'B' : 'A';
   redraw();
 });
-btnPickA.addEventListener('click', ()=>{ handleDecision('A'); });
-btnPickB.addEventListener('click', ()=>{ handleDecision('B'); });
+
+// NEW: Function to handle pre-selection
+function makePendingChoice(choice) {
+    current.pendingChoice = choice;
+    [btnPickA, btnPickB, btnPickSame].forEach(btn => btn.classList.remove('selected'));
+    if (choice === 'A') btnPickA.classList.add('selected');
+    if (choice === 'B') btnPickB.classList.add('selected');
+    if (choice === 'draw') btnPickSame.classList.add('selected');
+    btnConfirm.disabled = false;
+}
+
+// MODIFIED: Choice buttons now make a pending choice instead of handling the decision directly
+btnPickA.addEventListener('click', ()=>{ makePendingChoice('A'); });
+btnPickB.addEventListener('click', ()=>{ makePendingChoice('B'); });
+btnPickSame.addEventListener('click', ()=>{ makePendingChoice('draw'); });
+
+// NEW: Confirm button listener
+btnConfirm.addEventListener('click', () => {
+    if (current.pendingChoice) {
+        handleDecision(current.pendingChoice);
+    }
+});
+
+
 btnRandCrop.addEventListener('click', ()=>{
   if(fixedCrops[current.imageId]) return;
   const gtImg = cache.get(asset('gt', current.imageId));
@@ -349,6 +386,11 @@ btnNextImage.addEventListener('click', async () => {
   const nextImageIndex = current.imageIndex + 1;
   elStatus.textContent = 'Preloading...';
   try {
+    // Show all choice buttons for the next trial
+    btnPickA.style.display = 'inline-block';
+    btnPickB.style.display = 'inline-block';
+    btnPickSame.style.display = 'inline-block';
+    btnConfirm.style.display = 'inline-block';
     await preloadForImage(IMAGES[nextImageIndex]);
     elStatus.textContent = ''; 
     startImage(nextImageIndex);
@@ -361,10 +403,17 @@ btnNextImage.addEventListener('click', async () => {
 window.addEventListener('keydown', (e)=>{
   if(elTrial.style.display==='none') return;
   if(e.key===' '){ e.preventDefault(); btnToggle.click(); }
-  if(!btnPickA.disabled && btnPickA.style.display !== 'none' && (e.key==='f' || e.key==='F')){ btnPickA.click(); }
-  if(!btnPickB.disabled && btnPickB.style.display !== 'none' && (e.key==='j' || e.key==='J')){ btnPickB.click(); }
+  if(btnPickA.style.display !== 'none' && (e.key==='f' || e.key==='F')){ btnPickA.click(); }
+  if(btnPickB.style.display !== 'none' && (e.key==='j' || e.key==='J')){ btnPickB.click(); }
+  if(btnPickSame.style.display !== 'none' && (e.key==='s' || e.key==='S')){ btnPickSame.click(); }
   if(!btnRandCrop.disabled && (e.key==='r' || e.key==='R')){ btnRandCrop.click(); }
-  if(e.key==='Enter'){ btnLockCrop.click(); }
+  if(e.key==='Enter'){ 
+      if(!btnConfirm.disabled) { // If confirm is active, Enter clicks it
+          btnConfirm.click();
+      } else { // Otherwise, it locks the crop
+          btnLockCrop.click();
+      }
+  }
 });
 
 function finish(){
