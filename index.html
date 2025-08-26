@@ -85,7 +85,8 @@
 <script src="jspsych.js"></script>
 <script>
 // CONFIGURATION
-const METHODS = ["BPG_0db", "ADJSCC_0db", "WDJSCC_0db"]; 
+// MODIFICATION: Added 3 new methods for a total of 6
+const METHODS = ["BPG_0db", "ADJSCC_0db", "WDJSCC_0db", "BPG_10db", "ADJSCC_10db", "WDJSCC_10db"]; 
 const IMAGES  = ["kodim01", "kodim02", "kodim03", "kodim04", "kodim05", "kodim06", "kodim07", "kodim08", "kodim09", "kodim10", "kodim11", "kodim12", "kodim13", "kodim14", "kodim15", "kodim16", "kodim17", "kodim18", "kodim19", "kodim20", "kodim21", "kodim22", "kodim23", "kodim24"];
 const IMG_EXT = "png";
 const BASE_CROP = 512;
@@ -165,7 +166,8 @@ const elLeftLabel= document.getElementById('left-label');
 function updateHUD(){
   elProgress.textContent = `Image ${current.imageIndex+1}/${IMAGES.length} · Comparisons: ${current.comparisonsDone}`;
   elCropInfo.textContent = current.crop ? `  crop=(${current.crop.x},${current.crop.y},${current.crop.size})` : '';
-  elImgMeta.textContent = current.pair ? `A=${current.pair.A} · B=${current.pair.B} · Showing: ${current.showing}` : '';
+  // MODIFICATION: Commented out the line below to hide A/B method names from the UI
+  // elImgMeta.textContent = current.pair ? `A=${current.pair.A} · B=${current.pair.B} · Showing: ${current.showing}` : '';
   elLeftLabel.textContent = current.showing;
 }
 
@@ -383,7 +385,6 @@ function download(filename, text, mime){
   a.click();
 }
 
-// THIS IS THE FINAL FIX: Removed .get() from both listeners
 btnDownload.addEventListener('click', ()=>{ const csv = jsPsych.data.csv(); download(`results_${PARTICIPANT}.csv`, csv, 'text/csv;charset=utf-8;'); });
 btnJSON.addEventListener('click', ()=>{ const json = jsPsych.data.json(true); download(`results_${PARTICIPANT}.json`, json, 'application/json'); });
 
