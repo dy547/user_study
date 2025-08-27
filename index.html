@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <title>HiFiC-style 2AFC · ABX (Local libs)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <!-- Local stylesheet (no CDN) -->
   <link rel="stylesheet" href="./libs/jspsych.css">
   <style>
     :root{ --bg:#0b0d10; --fg:#e9eef3; --muted:#8a96a3; --acc:#55a6ff; --card:#11151a; --border:#1b2128; }
@@ -86,7 +85,6 @@
   </div>
 </main>
 
-<!-- Local js (no CDN) -->
 <script src="./libs/jspsych.js"></script>
 <script>
 // ===== init (local jspsych-lite) =====
@@ -97,7 +95,6 @@ const METHODS = ["BPG_0db","ADJSCC_0db","WDJSCC_0db","BPG_10db","ADJSCC_10db","W
 const IMAGES  = ["kodim01","kodim02","kodim03","kodim04","kodim05","kodim06","kodim07","kodim08","kodim09","kodim10","kodim11","kodim12","kodim13","kodim14","kodim15","kodim16","kodim17","kodim18","kodim19","kodim20","kodim21","kodim22","kodim23","kodim24"];
 const IMG_EXT = "png";
 const BASE_CROP = 512;
-const GOLDEN_QUESTION_PROBABILITY = 0.10;
 
 const params = new URLSearchParams(location.search);
 const PARTICIPANT = params.get('pid') || 'PILOT';
@@ -121,7 +118,7 @@ let current = {
   imageIndex: 0, imageId: null, crop: null, showing: 'A', pair: null,
   order: [], pending: [], low: 0, high: 0, mid: 0, candidate: null, next: null,
   comparisonsDone: 0, shownFirst: 'A',
-  trialStartTime: 0, toggleCount: 0, isGolden: false, correctChoice: null,
+  trialStartTime: 0, toggleCount: 0,
   pendingChoice: null
 };
 
@@ -193,8 +190,6 @@ function startInsertion(){
   if(current.pending.length===0){ nextImage(); return; }
   current.trialStartTime = performance.now();
   current.toggleCount = 0;
-  current.isGolden = false;
-  current.correctChoice = null;
 
   current.next = current.pending.shift();
   current.low = 0; current.high = current.order.length;
@@ -202,46 +197,35 @@ function startInsertion(){
   let method1 = current.next;
   let method2 = current.order[current.mid];
 
-  if (rnd() < GOLDEN_QUESTION_PROBABILITY) {
-    current.isGolden = true;
-    const pool = [...current.order, current.next];
-    method1 = pool[irand(0, pool.length - 1)];
-    method2 = 'gt';
-  }
-
   current.pair = randomizedPair(method1, method2);
-  if (current.isGolden) {
-    if (current.pair.A === 'gt') current.correctChoice = 'A';
-    if (current.pair.B === 'gt') current.correctChoice = 'B';
-  }
   current.showing = current.pair.startWith;
   current.shownFirst = current.pair.startWith;
   redraw();
 }
 
 function handleDecision(pick){
-  const modelProb = current.isGolden ? ((pick === current.correctChoice) ? 1 : 0) : '';
+  const { x, y, size } = current.crop;
+  const cropString = `${size}x${size}+${x}+${y}`;
+
   jsPsych.data.write({
     methodA: current.pair.A,
     methodB: current.pair.B,
     answerValue: pick,
     answerer: PARTICIPANT,
-    isGolden: current.isGolden ? 1 : 0,
-    modelProbability: modelProb,
+    isGolden: 0,
+    modelProbability: '',
     originalName: current.imageId,
     wasDiscarded: 0,
-    answeredAt: Date.now()
+    answeredAt: new Date().toString(), // Save full timestamp string
+    crop: cropString // Save the user-selected crop patch
   });
 
-  if (current.isGolden) { startInsertion(); return; }
   if(pick==='A'){ current.high = current.mid; } else if(pick==='B'){ current.low = current.mid + 1; }
   current.comparisonsDone++;
   if(current.low >= current.high){ current.order.splice(current.low, 0, current.next); startInsertion(); return; }
 
   current.trialStartTime = performance.now();
   current.toggleCount = 0;
-  current.isGolden = false;
-  current.correctChoice = null;
 
   current.mid = Math.floor((current.low+current.high)/2);
   current.pair = randomizedPair(current.next, current.order[current.mid]);
@@ -305,7 +289,7 @@ btnStart.addEventListener('click', async ()=>{
 });
 
 btnToggle.addEventListener('click', ()=>{
-  current.toggleCount++; 
+  current.toggleCount++;
   current.showing = (current.showing==='A') ? 'B' : 'A';
   redraw();
 });
@@ -353,7 +337,7 @@ window.addEventListener('keydown', (e)=>{
 function finish(){
   elTrial.style.display = 'none';
   elDone.style.display = 'block';
-  elSetup.style.display = 'block'; 
+  elSetup.style.display = 'block';
   btnDownload.disabled = false;
   btnJSON.disabled = false;
   const n = jsPsych.data.get().count();
