@@ -16,7 +16,7 @@
     .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
     .col{display:flex;flex-direction:column;gap:10px}
     canvas{background:#000;border:1px solid var(--border);border-radius:12px;display:block}
-    .panel{display:flex;gap:8px;flex-wrap:wrap}
+    .panel{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
     button{background:#10161d;border:1px solid var(--border);color:var(--fg);padding:8px 12px;border-radius:10px;cursor:pointer}
     button.primary{background:var(--acc);border-color:#2b78c5;color:#021020;font-weight:700}
     button:disabled{opacity:.55;cursor:not-allowed} .muted{color:var(--muted)} .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0c1218;border:1px solid var(--border);border-radius:6px;padding:2px 6px}
@@ -42,6 +42,15 @@
       <li>URL: <span class="kbd">?pid=001&seed=42</span> sets participant & RNG seed.</li>
     </ul>
     <div class="panel">
+      <div>
+        <button id="btn-set1">Set 1</button>
+        <button id="btn-set2">Set 2</button>
+        <button id="btn-set3">Set 3</button>
+        <button id="btn-set4">Set 4</button>
+        <button id="btn-set-all" class="selected">All</button>
+      </div>
+    </div>
+    <div class="panel" style="margin-top: 12px;">
       <button id="btn-start" class="primary">Start Experiment</button>
       <button id="btn-download" disabled>Download CSV</button>
       <button id="btn-json" disabled>Download JSON</button>
@@ -80,7 +89,7 @@
 
   <div class="card" id="done" style="display:none">
     <h2>Complete ✅</h2>
-    <p>Use the buttons above to download <b>CSV</b> or <b>JSON</b>.</p>
+    <p>Results for the set have been downloaded automatically. You can also use the buttons above to re-download <b>CSV</b> or <b>JSON</b> for the last completed set.</p>
     <pre id="summary" class="muted"></pre>
   </div>
 </main>
@@ -92,9 +101,20 @@ const jsPsych = initJsPsych();
 
 // ===== CONFIG =====
 const METHODS = ["BPG_0db","ADJSCC_0db","WDJSCC_0db","BPG_10db","ADJSCC_10db","WDJSCC_10db"];
-const IMAGES  = ["kodim01","kodim02","kodim03","kodim04","kodim05","kodim06","kodim07","kodim08","kodim09","kodim10","kodim11","kodim12","kodim13","kodim14","kodim15","kodim16","kodim17","kodim18","kodim19","kodim20","kodim21","kodim22","kodim23","kodim24"];
+const ALL_IMAGES  = ["kodim01","kodim02","kodim03","kodim04","kodim05","kodim06","kodim07","kodim08","kodim09","kodim10","kodim11","kodim12","kodim13","kodim14","kodim15","kodim16","kodim17","kodim18","kodim19","kodim20","kodim21","kodim22","kodim23","kodim24"];
 const IMG_EXT = "png";
 const BASE_CROP = 512;
+
+// --- Image Sets ---
+const IMAGE_SETS = {
+  set1: ALL_IMAGES.slice(0, 6),   // kodim01-06
+  set2: ALL_IMAGES.slice(6, 12),  // kodim07-12
+  set3: ALL_IMAGES.slice(12, 18), // kodim13-18
+  set4: ALL_IMAGES.slice(18, 24), // kodim19-24
+  all: ALL_IMAGES
+};
+let activeImages = IMAGE_SETS.all;
+let activeSetName = 'all'; // << NEW: To track the current set name for saving
 
 const params = new URLSearchParams(location.search);
 const PARTICIPANT = params.get('pid') || 'PILOT';
@@ -162,7 +182,7 @@ const elProgress = document.getElementById('progress');
 const elCropInfo = document.getElementById('cropinfo');
 const elLeftLabel= document.getElementById('left-label');
 function updateHUD(){
-  elProgress.textContent = `Image ${current.imageIndex+1}/${IMAGES.length} · Comparisons: ${current.comparisonsDone}`;
+  elProgress.textContent = `Image ${current.imageIndex+1}/${activeImages.length} · Comparisons: ${current.comparisonsDone}`;
   elCropInfo.textContent = current.crop ? `  crop=(${current.crop.x},${current.crop.y},${current.crop.size})` : '';
   elLeftLabel.textContent = current.showing;
 }
@@ -176,7 +196,7 @@ function randomizedPair(x,y){
 function startImage(index){
   btnRandCrop.disabled = false;
   current.imageIndex = index;
-  current.imageId = IMAGES[index];
+  current.imageId = activeImages[index];
   current.order = [METHODS[0]];
   current.pending = METHODS.slice(1);
   const gtImg = cache.get(asset('gt', current.imageId));
@@ -208,6 +228,7 @@ function handleDecision(pick){
   const cropString = `${size}x${size}+${x}+${y}`;
 
   jsPsych.data.write({
+    setName: activeSetName, // << NEW: Tag data with the set name
     methodA: current.pair.A,
     methodB: current.pair.B,
     answerValue: pick,
@@ -216,8 +237,8 @@ function handleDecision(pick){
     modelProbability: '',
     originalName: current.imageId,
     wasDiscarded: 0,
-    answeredAt: new Date().toString(), // Save full timestamp string
-    crop: cropString // Save the user-selected crop patch
+    answeredAt: new Date().toString(),
+    crop: cropString
   });
 
   if(pick==='A'){ current.high = current.mid; } else if(pick==='B'){ current.low = current.mid + 1; }
@@ -236,7 +257,7 @@ function handleDecision(pick){
 
 function nextImage(){
   if(!fixedCrops[current.imageId]) fixedCrops[current.imageId] = {...current.crop};
-  if(current.imageIndex + 1 < IMAGES.length){
+  if(current.imageIndex + 1 < activeImages.length){
     [btnPickA,btnPickB,btnPickSame,btnConfirm].forEach(b=>b.style.display='none');
     btnNextImage.style.display = 'inline-block';
   }else{
@@ -275,12 +296,41 @@ const btnNextImage = document.getElementById('btn-next-image');
 const btnPickSame = document.getElementById('btn-pick-same');
 const btnConfirm = document.getElementById('btn-confirm');
 
+const setButtons = [
+  document.getElementById('btn-set1'),
+  document.getElementById('btn-set2'),
+  document.getElementById('btn-set3'),
+  document.getElementById('btn-set4'),
+  document.getElementById('btn-set-all'),
+];
+
+function selectImageSet(setName, clickedButton) {
+  activeImages = IMAGE_SETS[setName];
+  activeSetName = setName; // << NEW: Update the active set name
+  setButtons.forEach(btn => btn.classList.remove('selected'));
+  clickedButton.classList.add('selected');
+  const displayName = setName.charAt(0).toUpperCase() + setName.slice(1);
+  elStatus.textContent = `Ready. ${METHODS.length} methods · ${activeImages.length} images (Set: ${displayName})`;
+}
+
+document.getElementById('btn-set1').addEventListener('click', (e) => selectImageSet('set1', e.target));
+document.getElementById('btn-set2').addEventListener('click', (e) => selectImageSet('set2', e.target));
+document.getElementById('btn-set3').addEventListener('click', (e) => selectImageSet('set3', e.target));
+document.getElementById('btn-set4').addEventListener('click', (e) => selectImageSet('set4', e.target));
+document.getElementById('btn-set-all').addEventListener('click', (e) => selectImageSet('all', e.target));
+
+
 btnStart.addEventListener('click', async ()=>{
+  if (activeImages.length === 0) {
+    elStatus.textContent = 'Error: No images in the selected set.';
+    return;
+  }
   elStatus.textContent = 'Preloading...';
   try {
-    await preloadForImage(IMAGES[0]);
+    await preloadForImage(activeImages[0]);
     elSetup.style.display = 'none';
     elTrial.style.display = 'block';
+    elDone.style.display = 'none'; // Hide done screen if re-starting
     startImage(0);
   } catch (error) {
     elStatus.textContent = 'Error: Could not load images. Check assets.';
@@ -315,11 +365,11 @@ btnNextImage.addEventListener('click', async ()=>{
   elStatus.textContent = 'Preloading...';
   try {
     [btnPickA,btnPickB,btnPickSame,btnConfirm].forEach(b=>b.style.display='inline-block');
-    await preloadForImage(IMAGES[nextImageIndex]);
+    await preloadForImage(activeImages[nextImageIndex]);
     elStatus.textContent = '';
     startImage(nextImageIndex);
   } catch (error) {
-    elStatus.textContent = `Error: Could not load ${IMAGES[nextImageIndex]}.`;
+    elStatus.textContent = `Error: Could not load ${activeImages[nextImageIndex]}.`;
     console.error('Preloading failed:', error);
   }
 });
@@ -340,28 +390,51 @@ function finish(){
   elSetup.style.display = 'block';
   btnDownload.disabled = false;
   btnJSON.disabled = false;
-  const n = jsPsych.data.get().count();
-  document.getElementById('summary').textContent = `Entries: ${n}\nParticipant: ${PARTICIPANT}\nSeed: ${RNG_SEED}`;
+  const dataForSet = jsPsych.data.get({setName: activeSetName});
+  const n = dataForSet.count();
+  document.getElementById('summary').textContent = `Set '${activeSetName}' complete.\nEntries: ${n}\nParticipant: ${PARTICIPANT}\nSeed: ${RNG_SEED}`;
+  
+  // --- NEW: Automatically download CSV for the completed set ---
+  downloadResults('csv');
 }
 
-// Export
+// --- MODIFIED: Generic download function ---
 function download(filename, text, mime){
   const blob = new Blob([text], {type: mime});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
+  document.body.appendChild(a); // Required for Firefox
   a.click();
+  document.body.removeChild(a);
 }
-btnDownload.addEventListener('click', ()=>{
-  const csv = jsPsych.data.get().csv();
-  download(`results_${PARTICIPANT}.csv`, csv, 'text/csv;charset=utf-8;');
-});
-btnJSON.addEventListener('click', ()=>{
-  const json = jsPsych.data.get().json(true);
-  download(`results_${PARTICIPANT}.json`, json, 'application/json');
-});
 
-document.getElementById('status').textContent = `Ready. ${METHODS.length} methods · ${IMAGES.length} images`;
+// --- NEW: Centralized function to get and download data ---
+function downloadResults(format = 'csv') {
+  // Filter data for the last active set
+  const dataForSet = jsPsych.data.get({setName: activeSetName});
+  if(dataForSet.count() === 0) {
+    alert(`No data found for set: ${activeSetName}`);
+    return;
+  }
+
+  // Generate filename with set name
+  const filename = `results_${PARTICIPANT}_${activeSetName}.${format}`;
+
+  if (format === 'csv') {
+    const csv = dataForSet.csv();
+    download(filename, csv, 'text/csv;charset=utf-8;');
+  } else if (format === 'json') {
+    const json = dataForSet.json(true);
+    download(filename, json, 'application/json');
+  }
+}
+
+// --- MODIFIED: Event listeners now use the new download function ---
+btnDownload.addEventListener('click', () => downloadResults('csv'));
+btnJSON.addEventListener('click', () => downloadResults('json'));
+
+document.getElementById('status').textContent = `Ready. ${METHODS.length} methods · ${activeImages.length} images (Set: All)`;
 </script>
 </body>
 </html>
