@@ -23,6 +23,8 @@
     .footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center}
     a{color:var(--acc);text-decoration:none}
     button.selected { border-color: var(--fg); box-shadow: 0 0 8px var(--acc); }
+    /* New styles for the input field */
+    input[type="text"] { background: #0c1218; border: 1px solid var(--border); color: var(--fg); padding: 8px 12px; border-radius: 10px; width: 100px; }
   </style>
 </head>
 <body>
@@ -48,6 +50,10 @@
         <button id="btn-set3">Set 3</button>
         <button id="btn-set4">Set 4</button>
         <button id="btn-set-all" class="selected">All</button>
+      </div>
+       <div style="border-left: 1px solid var(--border); padding-left: 8px; margin-left: 8px;">
+        <input type="text" id="input-single-image" placeholder="e.g., 23">
+        <button id="btn-single-image">Test Single</button>
       </div>
     </div>
     <div class="panel" style="margin-top: 12px;">
@@ -114,7 +120,7 @@ const IMAGE_SETS = {
   all: ALL_IMAGES
 };
 let activeImages = IMAGE_SETS.all;
-let activeSetName = 'all'; // << NEW: To track the current set name for saving
+let activeSetName = 'all'; 
 
 const params = new URLSearchParams(location.search);
 const PARTICIPANT = params.get('pid') || 'PILOT';
@@ -228,7 +234,7 @@ function handleDecision(pick){
   const cropString = `${size}x${size}+${x}+${y}`;
 
   jsPsych.data.write({
-    setName: activeSetName, // << NEW: Tag data with the set name
+    setName: activeSetName,
     methodA: current.pair.A,
     methodB: current.pair.B,
     answerValue: pick,
@@ -295,6 +301,9 @@ const elStatus= document.getElementById('status');
 const btnNextImage = document.getElementById('btn-next-image');
 const btnPickSame = document.getElementById('btn-pick-same');
 const btnConfirm = document.getElementById('btn-confirm');
+// NEW: Single image UI elements
+const inputSingleImage = document.getElementById('input-single-image');
+const btnSingleImage = document.getElementById('btn-single-image');
 
 const setButtons = [
   document.getElementById('btn-set1'),
@@ -306,9 +315,10 @@ const setButtons = [
 
 function selectImageSet(setName, clickedButton) {
   activeImages = IMAGE_SETS[setName];
-  activeSetName = setName; // << NEW: Update the active set name
+  activeSetName = setName;
   setButtons.forEach(btn => btn.classList.remove('selected'));
   clickedButton.classList.add('selected');
+  inputSingleImage.value = ''; // Clear single image input
   const displayName = setName.charAt(0).toUpperCase() + setName.slice(1);
   elStatus.textContent = `Ready. ${METHODS.length} methods · ${activeImages.length} images (Set: ${displayName})`;
 }
@@ -319,10 +329,31 @@ document.getElementById('btn-set3').addEventListener('click', (e) => selectImage
 document.getElementById('btn-set4').addEventListener('click', (e) => selectImageSet('set4', e.target));
 document.getElementById('btn-set-all').addEventListener('click', (e) => selectImageSet('all', e.target));
 
+// NEW: Event listener for the single image button
+btnSingleImage.addEventListener('click', () => {
+  let value = inputSingleImage.value.trim();
+  if (!value) {
+    elStatus.textContent = "Please enter an image number (e.g., 23).";
+    return;
+  }
+  // Auto-complete the name, e.g., 23 -> kodim23
+  let imageName = value.startsWith('kodim') ? value : `kodim${value.padStart(2, '0')}`;
+
+  if (ALL_IMAGES.includes(imageName)) {
+    activeImages = [imageName];
+    activeSetName = imageName; // Use the image name itself as the set name
+    setButtons.forEach(btn => btn.classList.remove('selected'));
+    elStatus.textContent = `Ready. ${METHODS.length} methods · 1 image (Single: ${imageName})`;
+  } else {
+    elStatus.textContent = `Error: Image "${imageName}" not found.`;
+    activeImages = [];
+  }
+});
+
 
 btnStart.addEventListener('click', async ()=>{
   if (activeImages.length === 0) {
-    elStatus.textContent = 'Error: No images in the selected set.';
+    elStatus.textContent = 'Error: No images selected or image not found.';
     return;
   }
   elStatus.textContent = 'Preloading...';
@@ -330,7 +361,7 @@ btnStart.addEventListener('click', async ()=>{
     await preloadForImage(activeImages[0]);
     elSetup.style.display = 'none';
     elTrial.style.display = 'block';
-    elDone.style.display = 'none'; // Hide done screen if re-starting
+    elDone.style.display = 'none';
     startImage(0);
   } catch (error) {
     elStatus.textContent = 'Error: Could not load images. Check assets.';
@@ -394,31 +425,26 @@ function finish(){
   const n = dataForSet.count();
   document.getElementById('summary').textContent = `Set '${activeSetName}' complete.\nEntries: ${n}\nParticipant: ${PARTICIPANT}\nSeed: ${RNG_SEED}`;
   
-  // --- NEW: Automatically download CSV for the completed set ---
   downloadResults('csv');
 }
 
-// --- MODIFIED: Generic download function ---
 function download(filename, text, mime){
   const blob = new Blob([text], {type: mime});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = filename;
-  document.body.appendChild(a); // Required for Firefox
+  document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
 }
 
-// --- NEW: Centralized function to get and download data ---
 function downloadResults(format = 'csv') {
-  // Filter data for the last active set
   const dataForSet = jsPsych.data.get({setName: activeSetName});
   if(dataForSet.count() === 0) {
     alert(`No data found for set: ${activeSetName}`);
     return;
   }
 
-  // Generate filename with set name
   const filename = `results_${PARTICIPANT}_${activeSetName}.${format}`;
 
   if (format === 'csv') {
@@ -430,7 +456,6 @@ function downloadResults(format = 'csv') {
   }
 }
 
-// --- MODIFIED: Event listeners now use the new download function ---
 btnDownload.addEventListener('click', () => downloadResults('csv'));
 btnJSON.addEventListener('click', () => downloadResults('json'));
 
