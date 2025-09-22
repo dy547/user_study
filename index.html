@@ -177,18 +177,6 @@ function randomCropCoord(img){
   const xMax = Math.max(0, W - size), yMax = Math.max(0, H - size);
   return { x: xMax>0 ? irand(0,xMax) : 0, y: yMax>0 ? irand(0,yMax) : 0, size };
 }
-
-// NEW FUNCTION to get a centered crop
-function centerCropCoord(img) {
-  const size = cropSizeCSS;
-  const W = img.naturalWidth;
-  const H = img.naturalHeight;
-  const x = Math.floor((W - size) / 2);
-  const y = Math.floor((H - size) / 2);
-  // Ensure coordinates are not negative if the image is smaller than the crop
-  return { x: Math.max(0, x), y: Math.max(0, y), size };
-}
-
 function drawCrop(ctx, img, crop){
   const s = crop.size, dw = Math.floor(cropSizeCSS * dpr), dh = Math.floor(cropSizeCSS * dpr);
   ctx.clearRect(0,0,dw,dh);
@@ -218,7 +206,7 @@ function startImage(index){
   current.order = [METHODS[0]];
   current.pending = METHODS.slice(1);
   const gtImg = cache.get(asset('gt', current.imageId));
-  current.crop = fixedCrops[current.imageId] || centerCropCoord(gtImg);
+  current.crop = fixedCrops[current.imageId] || randomCropCoord(gtImg);
   btnNextImage.style.display = 'none';
   [btnPickA,btnPickB,btnPickSame,btnConfirm].forEach(b=>b.style.display='inline-block');
   startInsertion();
